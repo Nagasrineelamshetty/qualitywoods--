@@ -19,52 +19,20 @@ const ProductDetails = () => {
 
   if (!product) return <div>Product not found</div>;
 
-  const handleBuyNow = async () => {
-    try {
-      setIsPaying(true);
-
-      // 1. Create Razorpay Order from backend
-      const orderResponse = await axios.post('/orders/create-order', {
-        amount: product.price * 100,
-      });
-
-      const orderData = orderResponse.data;
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: 'INR',
-        name: 'Quality Woods',
-        description: product.name,
-        // image: '/logo192.png',
-        order_id: orderData.id,
-        handler: async function (response: any) {
-          toast({ title: 'Payment successful!' });
-
-          await saveOrderToBackend({
-            razorpayOrderId: orderData.id,
-            paymentId: response.razorpay_payment_id
-          });
-
-          navigate('/track');
-        },
-        prefill: {
-          name: 'Customer',
-          email: 'customer@example.com',
-          contact: '9999999999'
-        },
-        theme: { color: '#D97706' }
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      console.error('Payment Error:', err);
-      toast({ title: 'Payment failed', variant: 'destructive' });
-    } finally {
-      setIsPaying(false);
-    }
+  const handleBuyNow = () => {
+  const itemToBuy = {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    quantity: 1,
+    image: product.image,
+    customizations: { wood, finish, dimensions }
   };
+
+  localStorage.setItem('buyNowItem', JSON.stringify(itemToBuy));
+  navigate('/checkout?mode=buy-now');
+};
+
 
   const saveOrderToBackend = async ({
     razorpayOrderId,

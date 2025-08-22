@@ -94,4 +94,49 @@ router.get(
   })
 );
 
+// ✅ POST /api/orders/verify-payment — Verify Razorpay signature and save order
+router.post(
+  '/verify-payment',
+  asyncHandler(async (req: Request, res: Response) => {
+    const crypto = require('crypto');
+    const {
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature,
+      user,
+      email,
+      items,
+      total,
+      shippingInfo,
+    } = req.body;
+
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_SECRET!)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (expectedSignature !== razorpay_signature) {
+      res.status(400).json({ message: 'Invalid Razorpay signature' });
+      return;
+    }
+
+    const order = new Order({
+      user,
+      email,
+      items,
+      total,
+      razorpayOrderId: razorpay_order_id,
+      status: 'Paid',
+      shippingInfo,
+      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    await order.save();
+    await sendOrderConfirmationEmail(email, razorpay_order_id);
+
+    res.status(201).json({ message: 'Payment verified and order saved' });
+  })
+);
+
+
 export default router;

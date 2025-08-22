@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, MapPin, Phone, User, Lock } from 'lucide-react';
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
-
+import { useEffect } from 'react';
 const Checkout = () => {
   const { state, clearCart } = useCart();
   const { user } = useAuth();
@@ -54,60 +53,111 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     if (!validateForm()) {
-      toast({
-        title: "Incomplete Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      return;
-    }
+    toast({
+      title: "Incomplete Information",
+      description: "Please fill in all required fields.",
+      variant: "destructive"
+    });
+    return;
+  }
 
-    setIsProcessing(true);
+  setIsProcessing(true);
 
-    try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate order ID
+  try {
+    if (paymentMethod === 'razorpay') {
+      initiateRazorpayPayment(); // Razorpay flow
+    } else {
+      // COD flow
       const orderId = `FC${Date.now()}`;
-      
-      // Simulate successful payment
       toast({
-        title: "Order Placed Successfully!",
-        description: `Your order #${orderId} has been confirmed. You will receive a confirmation email shortly.`
+        title: "Order Created Successfully!",
+        description: `Your COD order #${orderId} has been placed.`
       });
-      
-      // Clear cart and redirect
       clearCart();
       navigate('/track');
-      
-    } catch (error) {
-      toast({
-        title: "Payment Failed",
-        description: "There was an error processing your payment. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
     }
+  } catch (error) {
+    toast({
+      title: "Order Failed",
+      description: "There was an error placing your order. Please try again.",
+      variant: "destructive"
+    });
+  } finally {
+    setIsProcessing(false);
+  }
   };
 
-  const initiateRazorpayPayment = () => {
-    // This would typically load Razorpay SDK and process payment
+  const initiateRazorpayPayment = async () => {
+  if (!validateForm()) {
+    toast({
+      title: "Incomplete Information",
+      description: "Please fill in all required fields.",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  setIsProcessing(true);
+
+  try {
+    // Step 1: Create Razorpay order from backend
+    const res = await fetch('http://localhost:5000/api/orders/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: total * 100 }), // amount in paise
+    });
+
+    const data = await res.json();
+
+    // Step 2: Configure Razorpay options
     const options = {
-      key: 'your_razorpay_key',
-      amount: total * 100, // Amount in paise
-      currency: 'INR',
-      name: 'FurnitureCraft',
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: data.amount,
+      currency: data.currency,
+      name: 'Quality Woods',
       description: 'Custom Furniture Order',
-      order_id: `FC${Date.now()}`,
-      handler: (response: any) => {
-        toast({
-          title: "Payment Successful!",
-          description: "Your order has been placed successfully."
-        });
-        clearCart();
-        navigate('/tracking');
+      order_id: data.id, // ✅ Razorpay-generated order ID
+      handler: async (response: any) => {
+        try {
+          const verifyRes = await fetch('http://localhost:5000/api/orders/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              user: user.id,
+              email: user.email,
+              items: state.items,
+              total,
+              shippingInfo,
+            }),
+          });
+
+          const result = await verifyRes.json();
+
+          if (verifyRes.ok) {
+            toast({
+              title: "Payment Successful!",
+              description: "Your Razorpay order has been placed."
+            });
+            clearCart();
+            navigate('/track');
+          } else {
+            toast({
+              title: "Verification Failed",
+              description: result.message || "Could not verify payment.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          toast({
+            title: "Payment Error",
+            description: "Something went wrong while verifying your payment.",
+            variant: "destructive"
+          });
+          console.error("Verification error:", error);
+        }
       },
       prefill: {
         name: shippingInfo.fullName,
@@ -119,12 +169,26 @@ const Checkout = () => {
       }
     };
 
-    // For demo purposes, we'll just simulate the payment
-    handlePlaceOrder();
-  };
+    const rzp = new (window as any).Razorpay(options);
+    rzp.open();
+  } catch (error) {
+    toast({
+      title: "Payment Initialization Failed",
+      description: "Could not start Razorpay checkout.",
+      variant: "destructive"
+    });
+    console.error("Razorpay init error:", error);
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
+  useEffect(() => {
   if (state.items.length === 0) {
     navigate('/cart');
+  }
+}, [state.items, navigate]);
+  if (state.items.length === 0) {
     return null;
   }
 
