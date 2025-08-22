@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
 const Home = () => {
@@ -61,6 +58,11 @@ const Home = () => {
                   Shop Now
                 </Button>
               </Link>
+              <Link to="/login">
+                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
+                  Schedule Consultation
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -90,28 +92,6 @@ const Home = () => {
               }`}
             />
           ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-amber-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Space?</h2>
-          <p className="text-xl text-amber-100 mb-8">
-            Get in touch with our design experts and let's create something beautiful together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/products">
-              <Button size="lg" className="bg-white text-amber-900 hover:bg-amber-50 px-8 py-3 text-lg">
-                Start Shopping
-              </Button>
-            </Link>
-            <Link to="/login">
-        <Button size="lg" className="bg-white text-amber-900 hover:bg-amber px-8 py-3 text-lg">
-          Schedule Consultation
-        </Button>
-      </Link>
-          </div>
         </div>
       </section>
     </div>

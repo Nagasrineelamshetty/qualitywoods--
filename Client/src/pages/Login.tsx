@@ -138,16 +138,9 @@ const Login = () => {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-stone-300" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-stone-500">Demo Credentials</span>
-              </div>
-            </div>
+           </div>
             
-            <div className="mt-4 p-4 bg-amber-50 rounded-lg text-sm">
-              <p className="font-medium text-amber-900 mb-2">Try these demo accounts:</p>
-              <p className="text-amber-700"><strong>Admin:</strong> admin@furniturecraft.com / admin123</p>
-              <p className="text-amber-700"><strong>User:</strong> Any email / Any password</p>
-            </div>
+            
           </div>
 
           <div className="mt-6 text-center">

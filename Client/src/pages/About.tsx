@@ -24,7 +24,7 @@ const About = () => {
     {
       icon: Award,
       title: 'Expert Craftsmanship',
-      description: 'Three generations of woodworking expertise with attention to every detail and traditional techniques passed down through our family.',
+      description: 'Two generations of woodworking expertise with attention to every detail and traditional techniques passed down through our family.',
     },
     {
       icon: Heart,
@@ -55,9 +55,9 @@ const About = () => {
 
   const showroom = {
     name: 'Main Showroom & Workshop',
-    address: '123 Furniture Street, Craftsman District, Mumbai 400001',
-    phone: '+91 98765 43210',
-    email: 'info@furniturecraft.com',
+    address: '123 Furniture Street, Disukhnagar, Hyderabad 500036',
+    phone: '+91 91826 58199',
+    email: 'info@qualitywoods.com',
     hours: 'Mon-Sat: 9:00 AM - 7:00 PM, Sun: 10:00 AM - 6:00 PM',
     image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600&h=400&fit=crop',
   };
@@ -67,7 +67,7 @@ const About = () => {
       {/* Hero Section */}
       <section className="bg-amber-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-bold mb-6">About FurnitureCraft</h1>
+          <h1 className="text-5xl font-bold mb-6">About Quality Woods</h1>
           <p className="text-xl text-amber-100 max-w-3xl mx-auto">
             Three generations of passion, craftsmanship, and dedication to creating beautiful furniture that transforms houses into homes.
           </p>
@@ -82,13 +82,13 @@ const About = () => {
               <h2 className="text-4xl font-bold text-amber-900 mb-6">Our Story</h2>
               <div className="space-y-6">
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Founded in 1998 by Neelamshetty Appa Rao, QualityWoods began as a small workshop in Mumbai with a simple yet powerful vision: to create furniture that doesn't just fill spaces, but enriches lives. What started with a father and son crafting wooden chairs in a modest garage has blossomed into a trusted name across India.
+                  Founded in 1998 by Neelamshetty Appa Rao, QualityWoods began as a small workshop in Hyderabad with a simple yet powerful vision: to create furniture that doesn't just fill spaces, but enriches lives. What started with a father and son crafting wooden chairs in a modest garage has blossomed into a trusted name across India.
                 </p>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Today, we're proud to be a three-generation family business. Rajesh's son, Amit Kumar, brought modern design sensibilities and business acumen, while his grandson, Arjun Kumar, has introduced sustainable practices and digital innovation. Together, they've built a legacy that honors traditional woodworking while embracing contemporary needs.
+                  Today, we're proud to be a three-generation family business. Appa Rao's son, Srinivas Rao, brought modern design sensibilities and business acumen, while his grandson, Guru Charan, has introduced sustainable practices and digital innovation. Together, they've built a legacy that honors traditional woodworking while embracing contemporary needs.
                 </p>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Our journey has been one of growth, learning, and unwavering commitment to quality. From our humble beginnings to serving over 10,000 families across the country, every piece we create carries the Kumar family's promise of excellence, durability, and beauty.
+                  Our journey has been one of growth, learning, and unwavering commitment to quality. From our humble beginnings to serving over 10,000 families across the country, every piece we create carries the Neelamshetty family's promise of excellence, durability, and beauty.
                 </p>
               </div>
 
@@ -136,7 +136,7 @@ const About = () => {
       <section className="py-20 bg-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-amber-900 mb-4">Why Choose FurnitureCraft?</h2>
+            <h2 className="text-4xl font-bold text-amber-900 mb-4">Why Choose QualityWoods?</h2>
             <p className="text-xl text-stone-600 max-w-3xl mx-auto">
               More than just furniture makers, we're craftsmen who understand that your home is your sanctuary.
             </p>

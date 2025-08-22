@@ -210,7 +210,7 @@ const Cart = () => {
                 </div>
 
                 {shipping === 0 && (
-                  <p className="text-sm text-green-600">✓ Free shipping on orders above ₹50,000</p>
+                  <p className="text-sm text-green-600">✓ Free shipping on orders above ₹90,000</p>
                 )}
 
                 <div className="border-t pt-4">
@@ -224,7 +224,7 @@ const Cart = () => {
               <div className="space-y-3">
                 {isAuthenticated ? (
                   <Link to="/checkout" className="block">
-                    <Button size="lg" className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                    <Button size="lg" className="w-full bg-amber-600 hover:bg-amber-700 text-white mb-3">
                       Proceed to Checkout
                     </Button>
                   </Link>

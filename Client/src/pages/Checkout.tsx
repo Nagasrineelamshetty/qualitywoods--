@@ -79,7 +79,7 @@ const Checkout = () => {
       
       // Clear cart and redirect
       clearCart();
-      navigate('/tracking');
+      navigate('/track');
       
     } catch (error) {
       toast({
