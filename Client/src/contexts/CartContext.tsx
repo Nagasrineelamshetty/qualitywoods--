@@ -165,13 +165,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearTimeout(debounceSave);
   }, [state.items]);
 
+  // ⬇ Buy Now handlers
+  const setBuyNowItem = (item: CartItem) => {
+    dispatch({ type: 'SET_BUY_NOW_ITEM', payload: item });
+    localStorage.setItem('buyNowItem', JSON.stringify(item)); // persist
+  };
+
+  const clearBuyNowItem = () => {
+    dispatch({ type: 'CLEAR_BUY_NOW_ITEM' });
+    localStorage.removeItem('buyNowItem'); // clear from storage
+  };
+
   const addItem = (item: CartItem) => dispatch({ type: 'ADD_ITEM', payload: item });
   const removeItem = (id: string) => dispatch({ type: 'REMOVE_ITEM', payload: id });
   const updateQuantity = (id: string, quantity: number) =>
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
   const clearCart = () => dispatch({ type: 'CLEAR_CART' });
-  const setBuyNowItem = (item: CartItem) => dispatch({ type: 'SET_BUY_NOW_ITEM', payload: item });
-  const clearBuyNowItem = () => dispatch({ type: 'CLEAR_BUY_NOW_ITEM' });
 
   return (
     <CartContext.Provider
