@@ -64,7 +64,7 @@ const DeliveryTracking = () => {
               <Card key={index} className="mb-8 p-6 bg-white shadow">
                 <div className="mb-4">
                   <h2 className="text-2xl font-semibold text-amber-900">Order #{order.razorpayOrderId}</h2>
-                  <p className="text-stone-600">Total: ₹{order.total.toLocaleString()} • Placed on: {new Date(order.orderDate).toLocaleDateString()}</p>
+                  <p className="text-stone-600">Total: ₹{order.total.toLocaleString()} • Placed on: {new Date(order.createdAt).toLocaleDateString()}</p>
                 </div>
 
                 {/* Items Ordered */}

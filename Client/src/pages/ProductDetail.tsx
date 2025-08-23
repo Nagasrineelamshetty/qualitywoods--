@@ -10,7 +10,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const product = products.find(p => p.id === id);
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, setBuyNowItem } = useCart();
 
   const [wood, setWood] = useState('Teak');
   const [finish, setFinish] = useState('Matte');
@@ -19,53 +19,32 @@ const ProductDetails = () => {
 
   if (!product) return <div>Product not found</div>;
 
+  // Buy Now button handler
   const handleBuyNow = () => {
-  const itemToBuy = {
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    quantity: 1,
-    image: product.image,
-    customizations: { wood, finish, dimensions }
+    const itemToBuy = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image,
+      customizations: { wood, finish, dimensions }
+    };
+
+    setBuyNowItem(itemToBuy);                 // Save in CartContext
+    navigate('/checkout?mode=buy-now');       // Redirect to Checkout page
   };
 
-  localStorage.setItem('buyNowItem', JSON.stringify(itemToBuy));
-  navigate('/checkout?mode=buy-now');
-};
-
-
-  const saveOrderToBackend = async ({
-    razorpayOrderId,
-    paymentId
-  }: {
-    razorpayOrderId: string;
-    paymentId: string;
-  }) => {
-    try {
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-
-      await axios.post('/orders', {
-        user: currentUser._id || currentUser.id,
-        email: currentUser.email, // ✅ Add this line
-        razorpayOrderId,
-        items: [
-          {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            quantity: 1,
-            customizations: { wood, finish, dimensions }
-          }
-        ],
-        total: product.price,
-        status: 'Received',
-        estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      });
-    } catch (err) {
-      console.error('Failed to save order:', err);
-      toast({ title: 'Order saving failed', variant: 'destructive' });
-    }
+  // Add to cart handler
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      quantity: 1,
+      customizations: { wood, finish, dimensions }
+    });
+    toast({ title: 'Added to cart!' });
   };
 
   return (
@@ -107,28 +86,11 @@ const ProductDetails = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-4">
-            <Button
-              onClick={() => {
-                addItem({
-                  id: product.id,
-                  name: product.name,
-                  price: product.price,
-                  image: product.image,
-                  quantity: 1,
-                  customizations: { wood, finish, dimensions }
-                });
-                toast({ title: 'Added to cart!' });
-              }}
-              className="bg-stone-700 hover:bg-stone-800"
-            >
+            <Button onClick={handleAddToCart} className="bg-stone-700 hover:bg-stone-800">
               Add to Cart
             </Button>
 
-            <Button
-              onClick={handleBuyNow}
-              disabled={isPaying}
-              className="bg-amber-600 hover:bg-amber-700"
-            >
+            <Button onClick={handleBuyNow} disabled={isPaying} className="bg-amber-600 hover:bg-amber-700">
               {isPaying ? 'Processing...' : 'Buy Now'}
             </Button>
           </div>
