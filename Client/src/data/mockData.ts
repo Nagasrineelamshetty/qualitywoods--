@@ -5,11 +5,7 @@ export const products = [
     name: 'Luxury King Size Bed',
     category: 'Beds',
     price: 45000,
-    image: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&h=600&fit=crop',
-    images: [
-      'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&h=600&fit=crop',
-      'https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop'
-    ],
+    image: 'dining_table.jpg',
     description: 'Handcrafted king size bed with premium teak wood finish. Features elegant headboard design and sturdy construction.',
     specifications: {
       material: 'Teak Wood',
@@ -87,10 +83,7 @@ export const products = [
     name: '4-Door Wardrobe',
     category: 'Storage',
     price: 55000,
-    image: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop',
-    images: [
-      'https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=800&h=600&fit=crop'
-    ],
+    image: 'dining_table.jpg',
     description: 'Spacious 4-door wardrobe with hanging space, shelves, and drawers. Sliding door mechanism.',
     specifications: {
       material: 'Plywood',
@@ -132,21 +125,21 @@ export const testimonials = [
     name: 'Priya Sharma',
     rating: 5,
     comment: 'Absolutely loved the custom bed design! The quality is exceptional and delivery was on time.',
-    image: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=100&h=100&fit=crop&crop=face'
+    image: 'dining_table.jpg'
   },
   {
     id: '2',
     name: 'Rajesh Kumar',
     rating: 5,
     comment: 'The modular kitchen exceeded our expectations. Professional team and excellent craftsmanship.',
-    image: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=100&h=100&fit=crop&crop=face'
+    image: 'dining_table.jpg'
   },
   {
     id: '3',
     name: 'Anjali Patel',
     rating: 4,
     comment: 'Beautiful furniture and great customer service. Highly recommend FurnitureCraft for custom designs.',
-    image: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=100&h=100&fit=crop&crop=face'
+    image: 'dining_table.jpg'
   }
 ];
 

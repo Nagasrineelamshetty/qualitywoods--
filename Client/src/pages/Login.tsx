@@ -54,7 +54,7 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-amber-900 mb-2">Welcome Back</h2>
-          <p className="text-stone-600">Sign in to your FurnitureCraft account</p>
+          <p className="text-stone-600">Sign in to your Quality Woods account</p>
         </div>
 
         <Card className="p-8 bg-white">
