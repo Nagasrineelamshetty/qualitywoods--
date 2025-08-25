@@ -24,7 +24,7 @@ const DeliveryTracking = () => {
           return;
         }
 
-        const res = await axios.get(`/orders/user/${user._id}`);
+        const res = await axios.get(`api/orders/user/${user._id}`);
         setOrders(res.data);
       } catch (error) {
         toast({ title: 'Failed to fetch orders', variant: 'destructive' });

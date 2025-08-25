@@ -5,7 +5,7 @@ export const products = [
     name: 'Luxury King Size Bed',
     category: 'Beds',
     price: 45000,
-    image: 'dining_table.jpg',
+    image: 'kingsizebed.jpg',
     description: 'Handcrafted king size bed with premium teak wood finish. Features elegant headboard design and sturdy construction.',
     specifications: {
       material: 'Teak Wood',
@@ -43,7 +43,7 @@ export const products = [
     name: 'Modular Kitchen Set',
     category: 'Kitchen',
     price: 125000,
-    image: 'dining_table.jpg',
+    image: 'kitchenset.jpg',
     
     description: 'Complete modular kitchen solution with modern cabinets, countertops, and storage solutions.',
     specifications: {
@@ -80,10 +80,10 @@ export const products = [
   },
   {
     id: '5',
-    name: '4-Door Wardrobe',
+    name: '2-Door Wardrobe',
     category: 'Storage',
     price: 55000,
-    image: 'dining_table.jpg',
+    image: 'wardrobe.jpg',
     description: 'Spacious 4-door wardrobe with hanging space, shelves, and drawers. Sliding door mechanism.',
     specifications: {
       material: 'Plywood',
@@ -95,7 +95,7 @@ export const products = [
       finish: ['Natural', 'White', 'Walnut', 'Cherry'],
       dimensions: ['2-Door', '3-Door', '4-Door', '6-Door']
     },
-    inStock: false
+    inStock: true
   },
   {
     id: '6',

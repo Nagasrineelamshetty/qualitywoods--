@@ -59,7 +59,7 @@ const About = () => {
     phone: '+91 91826 58199',
     email: 'info@qualitywoods.com',
     hours: 'Mon-Sat: 9:00 AM - 7:00 PM, Sun: 10:00 AM - 6:00 PM',
-    image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600&h=400&fit=crop',
+    image: 'workshop.webp',
   };
 
   return (
@@ -111,7 +111,7 @@ const About = () => {
 
             <div className="space-y-4">
               <img
-                src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=600&h=400&fit=crop"
+                src="workshop.webp"
                 alt="Our founder at work"
                 className="rounded-lg shadow-lg w-full"
               />
