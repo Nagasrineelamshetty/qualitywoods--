@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import orderRoutes from './routes/orderRoutes'; // ✅ <-- added this
 import auth from './routes/auth'; 
 import cartRoutes from './routes/cartRoutes';
-
+import chatRoute from './routes/chat';
 import collaborationRoutes from './routes/collaborationRoutes';
 
 
@@ -25,40 +25,8 @@ app.use('/api/users', auth);
 //cart routes
 app.use('/api/cart', cartRoutes);
 app.use('/api/collab', collaborationRoutes);
-// 🔁 Ollama chat route
-app.post('/chat', async (req, res) => {
-  const { message } = req.body;
-  if (!message) return res.status(400).json({ error: 'Message is required' });
-
-  try {
-    const knowledgePath = path.join(__dirname, 'knowledge.txt');
-    const systemPrompt = fs.readFileSync(knowledgePath, 'utf8');
-
-    const payload = {
-      model: "llama3",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: message }
-      ],
-      stream: false
-    };
-
-    const ollamaRes = await fetch('http://localhost:11434/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await ollamaRes.json();
-    const responseText = result.message?.content;
-
-    res.json({ response: responseText || "Sorry, I couldn't find an answer." });
-
-  } catch (err: any) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Failed to get response from Ollama' });
-  }
-});
+// 🔁 chat route
+app.use('/chat', chatRoute);
 
 // ✅ Add this line to use the orders route
 app.use('/api/orders', orderRoutes);
