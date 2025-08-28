@@ -111,7 +111,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           if (user?._id) {
             dispatch({ type: 'SET_LOADING', payload: true });
-            const res = await axios.get('/api/cart');
+            const res = await axios.get('/cart');
             const dbItems = res.data?.items || [];
 
             const loadedItems = dbItems.map((item: any) => ({
@@ -152,7 +152,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               customizations: item.customizations,
             }));
 
-            await axios.post('/api/cart', { items: payload });
+            await axios.post('/cart', { items: payload });
             console.log('🛠 Cart auto-saved to DB:', payload);
           }
         } catch (err) {
