@@ -104,78 +104,86 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const { user } = useAuth();
 
-  // ⬇ Load cart on user login
+  // ----------------- Load cart from DB -----------------
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const loadCart = async () => {
-        try {
-          if (user?._id) {
-            dispatch({ type: 'SET_LOADING', payload: true });
-            const res = await axios.get('/api/cart');
-            const dbItems = res.data?.items || [];
+    const loadCart = async () => {
+      if (!user?._id) return;
 
-            const loadedItems = dbItems.map((item: any) => ({
-              id: item.productId,
-              name: item.name,
-              price: item.price,
-              image: item.image,
-              quantity: item.quantity,
-              customizations: item.customizations,
-            }));
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
 
-            dispatch({ type: 'LOAD_CART', payload: loadedItems });
-            console.log('🔁 Loaded from DB:', loadedItems);
-          }
-        } catch (err) {
-          console.error('❌ Error loading cart from DB', err);
-          dispatch({ type: 'SET_LOADING', payload: false });
-        }
-      };
-      loadCart();
-    }, 100);
+      dispatch({ type: 'SET_LOADING', payload: true });
 
+      try {
+        const res = await axios.get('/api/cart', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const dbItems = res.data?.items || [];
+        const loadedItems = dbItems.map((item: any) => ({
+          id: item.productId,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity,
+          customizations: item.customizations,
+        }));
+
+        dispatch({ type: 'LOAD_CART', payload: loadedItems });
+        console.log('🔁 Loaded from DB:', loadedItems);
+      } catch (err) {
+        console.error('❌ Error loading cart from DB', err);
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
+    };
+
+    const timeout = setTimeout(loadCart, 100);
     return () => clearTimeout(timeout);
   }, [user?._id]);
 
-  // ⬇ Auto-save cart with debounce
+  // ----------------- Auto-save cart -----------------
   useEffect(() => {
-    const debounceSave = setTimeout(() => {
-      const saveCart = async () => {
-        try {
-          if (user?._id) {
-            const payload = state.items.map(item => ({
-              productId: item.id,
-              name: item.name,
-              price: item.price,
-              image: item.image,
-              quantity: item.quantity,
-              customizations: item.customizations,
-            }));
+    if (!user?._id) return;
+    if (state.items.length === 0) return; // prevent overwriting DB with empty cart
 
-            await axios.post('/api/cart', { items: payload });
-            console.log('🛠 Cart auto-saved to DB:', payload);
-          }
-        } catch (err) {
-          console.error('❌ Auto-save failed:', err);
-        }
-      };
-      saveCart();
-    }, 400);
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    const debounceSave = setTimeout(async () => {
+      const payload = state.items.map(item => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        quantity: item.quantity,
+        customizations: item.customizations,
+      }));
+
+      try {
+        await axios.post('/api/cart', { items: payload }, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('🛠 Cart auto-saved to DB:', payload);
+      } catch (err) {
+        console.error('❌ Auto-save failed:', err);
+      }
+    }, 500);
 
     return () => clearTimeout(debounceSave);
-  }, [state.items]);
+  }, [state.items, user?._id]);
 
-  // ⬇ Buy Now handlers
+  // ----------------- Buy Now handlers -----------------
   const setBuyNowItem = (item: CartItem) => {
     dispatch({ type: 'SET_BUY_NOW_ITEM', payload: item });
-    localStorage.setItem('buyNowItem', JSON.stringify(item)); // persist
+    localStorage.setItem('buyNowItem', JSON.stringify(item));
   };
 
   const clearBuyNowItem = () => {
     dispatch({ type: 'CLEAR_BUY_NOW_ITEM' });
-    localStorage.removeItem('buyNowItem'); // clear from storage
+    localStorage.removeItem('buyNowItem');
   };
 
+  // ----------------- Cart actions -----------------
   const addItem = (item: CartItem) => dispatch({ type: 'ADD_ITEM', payload: item });
   const removeItem = (id: string) => dispatch({ type: 'REMOVE_ITEM', payload: id });
   const updateQuantity = (id: string, quantity: number) =>

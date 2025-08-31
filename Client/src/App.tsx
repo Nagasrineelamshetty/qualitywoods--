@@ -20,6 +20,9 @@ import DeliveryTracking from "./pages/DeliveryTracking";
 import CollaborativeCart from "./pages/CollaborativeCart";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import ScheduleConsultation from './pages/ScheduleConsultation';
 
 // ✅ Inner component where useLocation is safely used
 const LayoutWithRouter = () => {
@@ -42,7 +45,11 @@ const LayoutWithRouter = () => {
           <Route path="/track" element={<DeliveryTracking />} />
           <Route path="/collaborative-cart/:sessionId" element={<CollaborativeCart />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/schedule-consultation" element={<ScheduleConsultation />} />
           <Route path="*" element={<NotFound />} />
+          
         </Routes>
       </main>
       {!hideFooter && <Footer />}

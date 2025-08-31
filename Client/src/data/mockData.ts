@@ -5,7 +5,7 @@ export const products = [
     name: 'Luxury King Size Bed',
     category: 'Beds',
     price: 45000,
-    image: 'kingsizebed.jpg',
+    image: '/kingsizebed.jpg',
     description: 'Handcrafted king size bed with premium teak wood finish. Features elegant headboard design and sturdy construction.',
     specifications: {
       material: 'Teak Wood',
@@ -24,7 +24,7 @@ export const products = [
     name: 'Sofa Set',
     category: 'Sofas',
     price: 65000,
-    image: 'sofa.jpg',
+    image: '/sofa.jpg',
     description: 'Contemporary sofa with premium fabric upholstery. Perfect for modern living rooms.',
     specifications: {
       material: 'Fabric & Wood Frame',

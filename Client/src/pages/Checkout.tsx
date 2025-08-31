@@ -95,10 +95,13 @@ const Checkout = () => {
 
       if (paymentMethod === 'cod') {
         // COD Order
+        const token = localStorage.getItem('accessToken');
         const codOrderId = generateCodOrderId();
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json' ,
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
               userId: user._id,
               razorpayOrderId: codOrderId,
@@ -144,9 +147,12 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/orders/create-order`, {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/create-order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+         },
         body: JSON.stringify({ amount: total})
       });
 
@@ -161,9 +167,12 @@ const Checkout = () => {
         order_id: data.id,
         handler: async (response: any) => {
           try {
+            const token = localStorage.getItem('accessToken')
             const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/verify-payment`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+               },
               body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,

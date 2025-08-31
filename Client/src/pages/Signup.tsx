@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -16,8 +15,9 @@ const Signup = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true); // default true
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { signup } = useAuth();
   const navigate = useNavigate();
 
@@ -30,21 +30,21 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Password Mismatch",
-        description: "Passwords do not match. Please try again.",
-        variant: "destructive"
+        title: 'Password Mismatch',
+        description: 'Passwords do not match. Please try again.',
+        variant: 'destructive'
       });
       return;
     }
 
     if (formData.password.length < 6) {
       toast({
-        title: "Weak Password",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
+        title: 'Weak Password',
+        description: 'Password must be at least 6 characters long.',
+        variant: 'destructive'
       });
       return;
     }
@@ -55,22 +55,35 @@ const Signup = () => {
       const success = await signup(formData.name, formData.email, formData.password);
       if (success) {
         toast({
-          title: "Account Created Successfully",
+          title: 'Account Created Successfully',
           description: "Welcome to QualityWoods! You're now signed in."
         });
+
+        // Save user based on rememberMe
+        if (!rememberMe) {
+          const user = localStorage.getItem('user');
+          const token = localStorage.getItem('accessToken');
+          if (user && token) {
+            sessionStorage.setItem('user', user);
+            sessionStorage.setItem('accessToken', token);
+            localStorage.removeItem('user');
+            localStorage.removeItem('accessToken');
+          }
+        }
+
         navigate('/');
       } else {
         toast({
-          title: "Signup Failed",
-          description: "Failed to create account. Please try again.",
-          variant: "destructive"
+          title: 'Signup Failed',
+          description: 'Failed to create account. Please try again.',
+          variant: 'destructive'
         });
       }
     } catch (error) {
       toast({
-        title: "Signup Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
+        title: 'Signup Error',
+        description: 'Something went wrong. Please try again.',
+        variant: 'destructive'
       });
     } finally {
       setIsLoading(false);
@@ -174,6 +187,22 @@ const Signup = () => {
                 >
                   {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-stone-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-stone-700">
+                  Remember me
+                </label>
               </div>
             </div>
 

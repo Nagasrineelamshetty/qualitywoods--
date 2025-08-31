@@ -58,7 +58,7 @@ const About = () => {
     address: '123 Furniture Street, Disukhnagar, Hyderabad 500036',
     phone: '+91 91826 58199',
     email: 'info@qualitywoods.com',
-    hours: 'Mon-Sat: 9:00 AM - 7:00 PM, Sun: 10:00 AM - 6:00 PM',
+    hours: 'Mon-Sat: 9:00 AM - 9:00 PM, Sun: 10:00 AM - 9:00 PM',
     image: 'workshop.webp',
   };
 
@@ -252,7 +252,7 @@ const About = () => {
             {/* Map */}
             <div className="h-96 lg:h-full min-h-[400px]">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.8754435872844!2d72.8776849!3d19.0759837!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7ceaeb7c8c2b1%3A0xe8e8e8e8e8e8e8e8!2sMumbai%2C%20Maharashtra%2C%20India!5e0!3m2!1sen!2sus!4v1640995200000!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15231.557675665406!2d78.51608279676877!3d17.36905328623727!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb98e8b4b2913b%3A0x49366cfa18225a9e!2sDilsukhnagar%2C%20Hyderabad%2C%20Telangana!5e0!3m2!1sen!2sin!4v1756444987400!5m2!1sen!2sin"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

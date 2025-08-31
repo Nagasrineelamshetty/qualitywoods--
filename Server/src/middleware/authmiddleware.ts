@@ -1,4 +1,3 @@
-// src/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -27,9 +26,18 @@ export const verifyToken = (req: AuthenticatedRequest, res: Response, next: Next
       name: string;
       isAdmin?: boolean;
     };
-    req.user = { id: decoded.id, name: decoded.name, isAdmin: decoded.isAdmin };
+
+    req.user = {
+      id: decoded.id,
+      name: decoded.name,
+      isAdmin: decoded.isAdmin,
+    };
+
     next();
-  } catch (err) {
-    return res.status(403).json({ message: 'Invalid or Expired Token' });
+  } catch (err: any) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Access token expired' });
+    }
+    return res.status(403).json({ message: 'Invalid token' });
   }
 };

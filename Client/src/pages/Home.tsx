@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const heroImages = [
     '/image_carousel1.jpg',
@@ -21,6 +24,16 @@ const Home = () => {
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroImages.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+
+  const handleConsultationClick = () => {
+    if (!user) {
+      // user not logged in → go to login page
+      navigate('/login', { state: { from: '/schedule-consultation' } });
+    } else {
+      // user logged in → go to consultation page
+      navigate('/schedule-consultation');
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -53,16 +66,20 @@ const Home = () => {
               Transform your house into a home with our handcrafted, custom furniture solutions
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
-              <Link to="/products">
-                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
-                  Shop Now
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg">
-                  Schedule Consultation
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                onClick={() => navigate('/products')}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
+              >
+                Shop Now
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleConsultationClick}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
+              >
+                Schedule Consultation
+              </Button>
             </div>
           </div>
         </div>

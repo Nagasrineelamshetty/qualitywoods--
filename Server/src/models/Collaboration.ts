@@ -1,30 +1,60 @@
-// models/Collaboration.ts
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
-const voteSchema = new Schema({
-  userId: String,
-  userName: String,
-  vote: { type: String, enum: ['up', 'down'] },
-  timestamp: { type: Date, default: Date.now },
+interface IVote {
+  userId: string;
+  value: number; // 1 for upvote, -1 for downvote
+}
+
+interface IComment {
+  userId: string;
+  text: string;
+  timestamp: Date;
+}
+
+interface ICartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  votes: IVote[];
+  comments: IComment[];
+}
+
+export interface ICollaboration extends Document {
+  sessionId: string;
+  users: string[]; // array of user IDs
+  cartItems: ICartItem[];
+  createdAt: Date;
+}
+
+const VoteSchema = new Schema<IVote>({
+  userId: { type: String, required: true },
+  value: { type: Number, required: true }
 });
 
-const commentSchema = new Schema({
-  id: String,
-  userId: String,
-  userName: String,
-  text: String,
-  timestamp: { type: Date, default: Date.now },
+const CommentSchema = new Schema<IComment>({
+  userId: { type: String, required: true },
+  text: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now }
 });
 
-const itemSchema = new Schema({
-  itemId: String,
-  votes: [voteSchema],
-  comments: [commentSchema],
+const CartItemSchema = new Schema<ICartItem>({
+  productId: { type: String, required: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true },
+  votes: [VoteSchema],
+  comments: [CommentSchema]
 });
 
-const collaborationSchema = new Schema({
-  sessionId: String,
-  items: [itemSchema],
+const CollaborationSchema = new Schema<ICollaboration>({
+  sessionId: { type: String, required: true, unique: true },
+  users: [{ type: String, required: true }],
+  cartItems: [CartItemSchema],
+  createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Collaboration', collaborationSchema);
+export default mongoose.model<ICollaboration>(
+  "Collaboration",
+  CollaborationSchema
+);

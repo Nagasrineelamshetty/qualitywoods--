@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from '../api/axios';
 
+// Helper to clear all auth-related data
+export const clearAuthData = () => {
+  localStorage.removeItem('user');
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('rememberMe');
+  sessionStorage.removeItem('user');
+  sessionStorage.removeItem('accessToken');
+};
+
 type UserType = {
   _id: string;
   name: string;
@@ -10,7 +19,7 @@ type UserType = {
 
 interface AuthContextType {
   user: UserType | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -18,21 +27,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserType | null>(() => {
-    const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [user, setUser] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (token && storedUser) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
+  // Normalize user data
   const normalizeUser = (userData: any): UserType => ({
     _id: userData._id || userData.id,
     name: userData.name,
@@ -40,62 +38,105 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin: userData.isAdmin,
   });
 
+  // Auto-login / restore session
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const rememberMe = localStorage.getItem('rememberMe') === 'true';
+        const storedUser = rememberMe 
+          ? localStorage.getItem('user') 
+          : sessionStorage.getItem('user');
+
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          const refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
+if (!refreshToken) throw new Error('No refresh token found');
+
+const res = await axios.post('/api/auth/refresh-token',{ refreshToken },{ withCredentials: true });
+
+          const newToken = res.data.accessToken;
+          if (newToken) {
+            if (rememberMe) localStorage.setItem('accessToken', newToken);
+            const userRes = await axios.get('/api/users/me');
+            setUser(userRes.data);
+          }
+        }
+      } catch(err: any) {
+        console.error('Refresh Error:', err?.response?.data || err.message);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // Signup
   const signup = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
-      const res = await axios.post('/users/signup', { name, email, password });
-      const { token, user } = res.data;
+      const res = await axios.post('/api/users/signup', { name, email, password });
+      const { accessToken, user } = res.data;
+      if (!accessToken || !user) throw new Error('Invalid signup response');
 
-      if (!token || !user) {
-        console.error('Invalid signup response:', res.data);
-        return false;
+      const normalized = normalizeUser(user);
+      localStorage.setItem('user', JSON.stringify(normalized));
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('rememberMe', 'true');
+      setUser(normalized);
+      return true;
+    } catch (err: any) {
+      console.error('Signup Error:', err?.response?.data?.message || err.message);
+      return false;
+    }
+  };
+
+  // Login
+  const login = async (email: string, password: string, rememberMe = false): Promise<boolean> => {
+    try {
+      const res = await axios.post('/api/auth/login', { email, password, rememberMe }, { withCredentials: true });
+      const { accessToken, refreshToken, user } = res.data;
+      if (!accessToken || !user) throw new Error('Invalid login response');
+
+      const normalized = normalizeUser(user);
+
+      if (rememberMe) {
+        localStorage.setItem('user', JSON.stringify(normalized));
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('rememberMe', 'true');
+        localStorage.setItem('refreshToken', refreshToken);
+      } else {
+        sessionStorage.setItem('user', JSON.stringify(normalized));
+        sessionStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('rememberMe', 'false');
       }
 
-      const normalized = normalizeUser(user);
-      localStorage.setItem('user', JSON.stringify(normalized));
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(normalized);
-
       return true;
-    } catch (error: any) {
-      console.error('Signup Error:', error?.response?.data?.message || error.message);
+    } catch (err: any) {
+      console.error('Login Error:', err?.response?.data?.message || err.message);
       return false;
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  // Logout
+  const logout = async () => {
     try {
-      const res = await axios.post('/users/login', { email, password });
-      const { token, user } = res.data;
-
-      if (!token || !user) throw new Error('Invalid login response');
-
-      const normalized = normalizeUser(user);
-      localStorage.setItem('user', JSON.stringify(normalized));
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(normalized);
-
-      return true;
-    } catch (error: any) {
-      console.error('Login Error:', error?.response?.data?.message || error.message);
-      return false;
+      await axios.post('/api/auth/logout', {}, { withCredentials: true });
+    } catch {
+      // ignore
     }
-  };
-
-  const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    clearAuthData();
   };
 
   return (
     <AuthContext.Provider value={{ user, login, signup, logout }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
-

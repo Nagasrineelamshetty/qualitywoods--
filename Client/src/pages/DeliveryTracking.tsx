@@ -3,6 +3,7 @@ import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { toast } from '../hooks/use-toast';
 import axios from '../api/axios';
+import { useAuth } from '../contexts/AuthContext';
 
 const statusSteps = [
   { key: 'Received', label: 'Order Received', icon: Package, description: 'Your order has been confirmed' },
@@ -12,19 +13,23 @@ const statusSteps = [
 ];
 
 const DeliveryTracking = () => {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user._id) {
-          toast({ title: 'Login required', description: 'Please login to view your orders.', variant: 'destructive' });
-          return;
-        }
+      if (!user?._id) {
+        toast({ title: 'Login required', description: 'Please login to view your orders.', variant: 'destructive' });
+        setLoading(false);
+        return;
+      }
 
-        const res = await axios.get(`api/orders/user/${user._id}`);
+      try {
+        const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+        const res = await axios.get(`/api/orders/user/${user._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setOrders(res.data);
       } catch (error) {
         toast({ title: 'Failed to fetch orders', variant: 'destructive' });
@@ -35,11 +40,10 @@ const DeliveryTracking = () => {
     };
 
     fetchOrders();
-  }, []);
+  }, [user]);
 
-  const getCurrentStepIndex = (status: string) => {
-    return statusSteps.findIndex(step => step.key === status);
-  };
+  const getCurrentStepIndex = (status: string) =>
+    statusSteps.findIndex(step => step.key === status);
 
   const getStepStatus = (stepIndex: number, currentIndex: number) => {
     if (stepIndex < currentIndex) return 'completed';
@@ -64,10 +68,11 @@ const DeliveryTracking = () => {
               <Card key={index} className="mb-8 p-6 bg-white shadow">
                 <div className="mb-4">
                   <h2 className="text-2xl font-semibold text-amber-900">Order #{order.razorpayOrderId}</h2>
-                  <p className="text-stone-600">Total: ₹{order.total.toLocaleString()} • Placed on: {new Date(order.createdAt).toLocaleDateString()}</p>
+                  <p className="text-stone-600">
+                    Total: ₹{order.total.toLocaleString()} • Placed on: {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
 
-                {/* Items Ordered */}
                 <div className="mb-4">
                   <h3 className="text-lg font-medium text-stone-700 mb-2">Items:</h3>
                   <ul className="list-disc list-inside text-stone-600">
@@ -79,7 +84,6 @@ const DeliveryTracking = () => {
                   </ul>
                 </div>
 
-                {/* Status Tracker */}
                 <div className="mt-4">
                   <h3 className="text-lg font-semibold text-amber-900 mb-4">Delivery Status</h3>
                   <div className="relative">
@@ -89,12 +93,10 @@ const DeliveryTracking = () => {
 
                       return (
                         <div key={step.key} className="relative flex items-start mb-8 last:mb-0">
-                          {/* Connector line */}
                           {stepIndex < statusSteps.length - 1 && (
                             <div className={`absolute left-6 top-12 w-0.5 h-16 ${stepStatus === 'completed' ? 'bg-green-500' : 'bg-stone-200'}`} />
                           )}
 
-                          {/* Step Icon */}
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                             stepStatus === 'completed' ? 'bg-green-500 text-white' :
                             stepStatus === 'current' ? 'bg-amber-500 text-white' :
@@ -103,7 +105,6 @@ const DeliveryTracking = () => {
                             <StepIcon size={20} />
                           </div>
 
-                          {/* Step Content */}
                           <div className="ml-4 flex-1">
                             <h4 className={`text-lg font-semibold ${
                               stepStatus === 'completed' ? 'text-green-700' :
