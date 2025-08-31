@@ -117,12 +117,12 @@ const About = () => {
               />
               <div className="grid grid-cols-2 gap-4">
                 <img
-                  src="https://images.unsplash.com/photo-1472396961693-142e6e269027?w=300&h=200&fit=crop"
+                  src=""
                   alt="Traditional craftsmanship"
                   className="rounded-lg shadow-lg"
                 />
                 <img
-                  src="https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=300&h=200&fit=crop"
+                  src="workshop.webp"
                   alt="Modern workshop"
                   className="rounded-lg shadow-lg"
                 />

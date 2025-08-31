@@ -50,7 +50,7 @@ const ProductDetails = () => {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex flex-col md:flex-row gap-8">
-        <img src={product.image} alt={product.name} className="w-full md:w-1/2 rounded-lg" />
+        <img src={product.image} alt={product.name} className="w-full md:w-1/2 rounded-lg object-cover" />
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-4 text-amber-900">{product.name}</h1>
           <p className="text-stone-600 mb-4">{product.description}</p>

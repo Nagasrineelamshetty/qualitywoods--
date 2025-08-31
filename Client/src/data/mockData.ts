@@ -43,7 +43,7 @@ export const products = [
     name: 'Modular Kitchen Set',
     category: 'Kitchen',
     price: 125000,
-    image: 'kitchenset.jpg',
+    image: '/kitchenset.jpg',
     
     description: 'Complete modular kitchen solution with modern cabinets, countertops, and storage solutions.',
     specifications: {
@@ -63,7 +63,7 @@ export const products = [
     name: 'Executive Office Desk',
     category: 'Office',
     price: 35000,
-    image: 'laptop_desk.jpg',
+    image: '/laptop_desk.jpg',
     
     description: 'Professional executive desk with ample storage and cable management. Perfect for home office.',
     specifications: {
@@ -83,7 +83,7 @@ export const products = [
     name: '2-Door Wardrobe',
     category: 'Storage',
     price: 55000,
-    image: 'wardrobe.jpg',
+    image: '/wardrobe.jpg',
     description: 'Spacious 4-door wardrobe with hanging space, shelves, and drawers. Sliding door mechanism.',
     specifications: {
       material: 'Plywood',
@@ -102,7 +102,147 @@ export const products = [
     name: 'Dining Table Set',
     category: 'Dining',
     price: 42000,
-    image: 'dining_table.jpg',
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '7',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '6',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '6',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '6',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '6',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '6',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
+  
+    description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
+    specifications: {
+      material: 'Solid Wood',
+      dimensions: '6ft x 3ft',
+      warranty: '8 years'
+    },
+    customizations: {
+      wood: ['Teak', 'Mahogany', 'Oak', 'Pine'],
+      finish: ['Natural', 'Dark Brown', 'Light Brown', 'Black'],
+      dimensions: ['4-Seater', '6-Seater', '8-Seater', '10-Seater']
+    },
+    inStock: true
+  },
+  {
+    id: '6',
+    name: 'Dining Table Set',
+    category: 'Dining',
+    price: 42000,
+    image: '/dining_table.jpg',
   
     description: '6-seater dining table set with matching chairs. Perfect for family gatherings.',
     specifications: {
