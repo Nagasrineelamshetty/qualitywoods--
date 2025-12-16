@@ -11,6 +11,8 @@ import {
   Shield,
   Truck,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -19,6 +21,18 @@ import { products, testimonials } from '../data/mockData';
 
 const About = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+
+  const handlePrev = () => {
+    setCurrentTestimonial(prev =>
+      prev === 0 ? testimonials.length - 1 : prev - 1
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentTestimonial(prev =>
+      prev === testimonials.length - 1 ? 0 : prev + 1
+    );
+  };
 
   const whyChooseUs = [
     {
@@ -55,9 +69,9 @@ const About = () => {
 
   const showroom = {
     name: 'Main Showroom & Workshop',
-    address: '123 Furniture Street, Disukhnagar, Hyderabad 500036',
+    address: '16-11-660/1&2, Gaddiannaram, Dilsukhnagar, Hyderabad 500036',
     phone: '+91 91826 58199',
-    email: 'info@qualitywoods.com',
+    email: 'qualitywoods@gmail.com',
     hours: 'Mon-Sat: 9:00 AM - 9:00 PM, Sun: 10:00 AM - 9:00 PM',
     image: 'workshop.webp',
   };
@@ -82,24 +96,23 @@ const About = () => {
               <h2 className="text-4xl font-bold text-amber-900 mb-6">Our Story</h2>
               <div className="space-y-6">
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Founded in 1998 by Neelamshetty Appa Rao, QualityWoods began as a small workshop in Hyderabad with a simple yet powerful vision: to create furniture that doesn't just fill spaces, but enriches lives. What started with a father and son crafting wooden chairs in a modest garage has blossomed into a trusted name across India.
+                  Founded in 1998 by Neelamshetty Appa Rao, QualityWoods began as a small workshop in Hyderabad with a simple yet powerful vision: to create furniture that doesn't just fill spaces, but enriches lives. What started as handcrafted wood works in a modest workshop has since blossomed into a trusted name across Hyderabad.
                 </p>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Today, we're proud to be a three-generation family business. Appa Rao's son, Srinivas Rao, brought modern design sensibilities and business acumen, while his grandson, Guru Charan, has introduced sustainable practices and digital innovation. Together, they've built a legacy that honors traditional woodworking while embracing contemporary needs.
+                  Today, we're proud to be a two-generation family business. Appa Rao's son, Srinivas Rao, brought modern design sensibilities and business acumen. Together, they've built a legacy that honors traditional woodworking while embracing contemporary needs.
                 </p>
                 <p className="text-lg text-stone-600 leading-relaxed">
-                  Our journey has been one of growth, learning, and unwavering commitment to quality. From our humble beginnings to serving over 10,000 families across the country, every piece we create carries the Neelamshetty family's promise of excellence, durability, and beauty.
+                  Our journey has been one of growth, learning, and unwavering commitment to quality. From our humble beginnings to serving over 6,000 families. Every piece we create carries the Neelamshetty family's promise of excellence, durability, and beauty.
                 </p>
               </div>
 
-              {/* Statistics */}
               <div className="grid grid-cols-3 gap-8 mt-12">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-amber-600">25+</div>
                   <div className="text-stone-600">Years Experience</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">10,000+</div>
+                  <div className="text-3xl font-bold text-amber-600">6,000+</div>
                   <div className="text-stone-600">Happy Families</div>
                 </div>
                 <div className="text-center">
@@ -110,22 +123,10 @@ const About = () => {
             </div>
 
             <div className="space-y-4">
-              <img
-                src="workshop.webp"
-                alt="Our founder at work"
-                className="rounded-lg shadow-lg w-full"
-              />
+              <img src="workshop.webp" alt="Our founder at work" className="rounded-lg shadow-lg w-full" />
               <div className="grid grid-cols-2 gap-4">
-                <img
-                  src=""
-                  alt="Traditional craftsmanship"
-                  className="rounded-lg shadow-lg"
-                />
-                <img
-                  src="workshop.webp"
-                  alt="Modern workshop"
-                  className="rounded-lg shadow-lg"
-                />
+                <img src="workshop.webp" alt="Traditional craftsmanship" className="rounded-lg shadow-lg" />
+                <img src="workshop.webp" alt="Modern workshop" className="rounded-lg shadow-lg" />
               </div>
             </div>
           </div>
@@ -161,16 +162,26 @@ const About = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-amber-900 mb-16">What Our Customers Say</h2>
 
-          <div className="relative">
-            <Card className="p-8 bg-white shadow-lg">
+          <div className="relative flex items-center justify-center">
+            {/* Left Arrow */}
+            <button
+              onClick={handlePrev}
+              className="absolute left-0 md:-left-14 p-2 bg-white rounded-full shadow hover:bg-amber-100 transition"
+            >
+              <ChevronLeft className="w-6 h-6 text-amber-700" />
+            </button>
+
+            <Card className="p-8 bg-white shadow-lg max-w-2xl w-full">
               <div className="flex justify-center mb-4">
                 {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
                   <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
                 ))}
               </div>
+
               <blockquote className="text-xl text-stone-700 mb-6 italic">
                 "{testimonials[currentTestimonial].comment}"
               </blockquote>
+
               <div className="flex items-center justify-center">
                 <img
                   src={testimonials[currentTestimonial].image}
@@ -184,18 +195,26 @@ const About = () => {
               </div>
             </Card>
 
-            {/* Testimonial Dots */}
-            <div className="flex justify-center space-x-2 mt-8">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    index === currentTestimonial ? 'bg-amber-500' : 'bg-amber-200'
-                  }`}
-                />
-              ))}
-            </div>
+            {/* Right Arrow */}
+            <button
+              onClick={handleNext}
+              className="absolute right-0 md:-right-14 p-2 bg-white rounded-full shadow hover:bg-amber-100 transition"
+            >
+              <ChevronRight className="w-6 h-6 text-amber-700" />
+            </button>
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center space-x-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentTestimonial(index)}
+                className={`w-3 h-3 rounded-full ${
+                  index === currentTestimonial ? 'bg-amber-500' : 'bg-amber-200'
+                }`}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -211,35 +230,27 @@ const About = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Showroom Details */}
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-              <img
-                src={showroom.image}
-                alt={showroom.name}
-                className="w-full h-64 object-cover"
-              />
+              <img src={showroom.image} alt={showroom.name} className="w-full h-64 object-cover" />
               <div className="p-8">
                 <h3 className="text-2xl font-semibold text-amber-900 mb-6">{showroom.name}</h3>
 
                 <div className="space-y-4 text-stone-600 mb-8">
                   <div className="flex items-start">
-                    <MapPin className="w-6 h-6 text-amber-600 mt-0.5 mr-4 flex-shrink-0" />
-                    <span className="text-base">{showroom.address}</span>
+                    <MapPin className="w-6 h-6 text-amber-600 mt-0.5 mr-4" />
+                    <span>{showroom.address}</span>
                   </div>
-
                   <div className="flex items-center">
-                    <Phone className="w-6 h-6 text-amber-600 mr-4 flex-shrink-0" />
-                    <span className="text-base">{showroom.phone}</span>
+                    <Phone className="w-6 h-6 text-amber-600 mr-4" />
+                    <span>{showroom.phone}</span>
                   </div>
-
                   <div className="flex items-center">
-                    <Mail className="w-6 h-6 text-amber-600 mr-4 flex-shrink-0" />
-                    <span className="text-base">{showroom.email}</span>
+                    <Mail className="w-6 h-6 text-amber-600 mr-4" />
+                    <span>{showroom.email}</span>
                   </div>
-
                   <div className="flex items-start">
-                    <Clock className="w-6 h-6 text-amber-600 mt-0.5 mr-4 flex-shrink-0" />
-                    <span className="text-base">{showroom.hours}</span>
+                    <Clock className="w-6 h-6 text-amber-600 mt-0.5 mr-4" />
+                    <span>{showroom.hours}</span>
                   </div>
                 </div>
 
@@ -249,7 +260,6 @@ const About = () => {
               </div>
             </Card>
 
-            {/* Map */}
             <div className="h-96 lg:h-full min-h-[400px]">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15231.557675665406!2d78.51608279676877!3d17.36905328623727!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb98e8b4b2913b%3A0x49366cfa18225a9e!2sDilsukhnagar%2C%20Hyderabad%2C%20Telangana!5e0!3m2!1sen!2sin!4v1756444987400!5m2!1sen!2sin"
@@ -258,9 +268,7 @@ const About = () => {
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
                 className="rounded-lg shadow-lg"
-                title="FurnitureCraft Showroom Location"
               ></iframe>
             </div>
           </div>

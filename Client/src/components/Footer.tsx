@@ -41,12 +41,12 @@ const Footer = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="w-5 h-5 mr-3 text-amber-200" />
-                <span className="text-amber-100">info@qualitywoods.com</span>
+                <span className="text-amber-100">qualitywoods@gmail.com</span>
               </div>
               <div className="flex items-start">
                 <MapPin className="w-5 h-5 mr-3 mt-1 text-amber-200" />
                 <span className="text-amber-100">
-                  123 Craft Street, Woodwork City,<br />
+                  16-11-660 1&2, Gaddiannaram, Dilsukhnagar<br />
                   Hyderabad 500036, India
                 </span>
               </div>
@@ -56,7 +56,7 @@ const Footer = () => {
 
         <div className="border-t border-amber-800 mt-8 pt-8 text-center">
           <p className="text-amber-200">
-            © 2024 QualityWoods. All rights reserved. | Crafted with ❤️ for your home.
+            © 2025 QualityWoods. All rights reserved. | Crafted with ❤️ for your home.
           </p>
         </div>
       </div>

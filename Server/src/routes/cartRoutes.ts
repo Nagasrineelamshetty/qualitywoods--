@@ -14,16 +14,14 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    console.log('📥 Incoming cart data:', items);
-
-    // 🧪 Validate each cart item
     if (!Array.isArray(items)) {
       return res.status(400).json({ error: 'Items must be an array' });
     }
 
+    // 🧪 Validate each cart item
     for (const item of items) {
       if (
-        typeof item.productId !== 'string' ||
+        typeof item.id !== 'string' ||
         typeof item.name !== 'string' ||
         typeof item.image !== 'string' ||
         typeof item.price !== 'number' ||
@@ -33,7 +31,6 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       }
     }
 
-    // 🛠 Update or create the user's cart
     const updatedCart = await Cart.findOneAndUpdate(
       { userId },
       { items },

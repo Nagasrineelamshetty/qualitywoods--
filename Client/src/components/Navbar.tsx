@@ -38,7 +38,7 @@ const Navbar = () => {
               Products
             </Link>
             <Link to="/track" className="text-amber-900 hover:text-amber-900 px-3 py-2 rounded-md text-base font-medium transition-colors">
-              Track Order
+              Orders
             </Link>
             <Link to="/cart" className="relative text-amber-900 hover:text-amber-900 p-2 rounded-md transition-colors">
               <ShoppingCart size={22} />
