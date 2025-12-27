@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
-
+const API_BASE = import.meta.env.VITE_API_URL;
 const Checkout = () => {
-  const { state, clearCart, buyNowItem, clearBuyNowItem } = useCart();
+  const { state, clearCart, clearBuyNowItem } = useCart();
+  const buyNowItem = state.buyNowItem;
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -23,7 +24,7 @@ const Checkout = () => {
 
     if (buyNowMode) {
       const itemFromState = buyNowItem;
-      const itemFromStorage = JSON.parse(localStorage.getItem('buyNowItem') || 'null');
+      const itemFromStorage = JSON.parse(sessionStorage.getItem('buyNowItem') || 'null');
 
       const currentItem = itemFromState || itemFromStorage;
 
@@ -307,6 +308,8 @@ const Checkout = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="maharashtra">Maharashtra</SelectItem>
+                      <SelectItem value="telangana">Telangana</SelectItem>
+                      <SelectItem value="andhrapradesh">AndhraPradesh</SelectItem>
                       <SelectItem value="delhi">Delhi</SelectItem>
                       <SelectItem value="karnataka">Karnataka</SelectItem>
                       <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
@@ -377,18 +380,33 @@ const Checkout = () => {
               <div className="space-y-4 mb-6">
                 {(isBuyNow && currentBuyNowItem ? [currentBuyNowItem] : state.items).map((item) => (
                   <div key={item.id} className="flex gap-3">
-                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                    <img
+                      src={`${API_BASE}${item.image}`}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+
                     <div className="flex-1">
-                      <h4 className="font-medium text-stone-900 text-sm">{item.name}</h4>
-                      <p className="text-xs text-stone-600">Qty: {item.quantity}</p>
-                      <div className="text-xs text-stone-500 space-y-0.5">
-                        {item.customizations.wood && <p>Wood: {item.customizations.wood}</p>}
-                        {item.customizations.finish && <p>Finish: {item.customizations.finish}</p>}
-                        {item.customizations.dimensions && <p>Size: {item.customizations.dimensions}</p>}
-                      </div>
+                      <h4 className="font-medium text-stone-900 text-sm">
+                        {item.name}
+                      </h4>
+
+                      <p className="text-xs text-stone-600">
+                        Qty: {item.quantity}
+                      </p>
+
+                      {item.description && (
+                        <p className="text-xs text-stone-500 mt-1 line-clamp-2">
+                          {item.description}
+                        </p>
+                      )}
                     </div>
-                    <div className="text-sm font-medium text-amber-600">₹{(item.price * item.quantity).toLocaleString()}</div>
+
+                    <div className="text-sm font-medium text-amber-600">
+                      ₹{(item.price * item.quantity).toLocaleString()}
+                    </div>
                   </div>
+
                 ))}
               </div>
 

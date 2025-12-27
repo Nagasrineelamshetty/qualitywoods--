@@ -90,48 +90,52 @@ const About = () => {
 
       {/* Our Story Section */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold text-amber-900 mb-6">
+            Our Story
+          </h2>
+
+          <div className="space-y-6">
+            <p className="text-lg text-stone-600 leading-relaxed">
+              Founded in 1998 by Neelamshetty Appa Rao, Quality Woods began as a small
+              workshop in Hyderabad with a simple yet powerful vision — to create
+              furniture that doesn’t just fill spaces, but enriches lives. What started
+              as handcrafted woodwork in a modest setup has grown into a trusted name
+              across the city.
+            </p>
+
+            <p className="text-lg text-stone-600 leading-relaxed">
+              Today, we are proud to be a two-generation family business. With the next
+              generation bringing modern design sensibilities and business expertise,
+              we continue to honour traditional craftsmanship while adapting to
+              contemporary needs.
+            </p>
+
+            <p className="text-lg text-stone-600 leading-relaxed">
+              From our humble beginnings to serving over 6,000 families, every piece
+              we create carries our promise of quality, durability, and timeless
+              design.
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12">
             <div>
-              <h2 className="text-4xl font-bold text-amber-900 mb-6">Our Story</h2>
-              <div className="space-y-6">
-                <p className="text-lg text-stone-600 leading-relaxed">
-                  Founded in 1998 by Neelamshetty Appa Rao, QualityWoods began as a small workshop in Hyderabad with a simple yet powerful vision: to create furniture that doesn't just fill spaces, but enriches lives. What started as handcrafted wood works in a modest workshop has since blossomed into a trusted name across Hyderabad.
-                </p>
-                <p className="text-lg text-stone-600 leading-relaxed">
-                  Today, we're proud to be a two-generation family business. Appa Rao's son, Srinivas Rao, brought modern design sensibilities and business acumen. Together, they've built a legacy that honors traditional woodworking while embracing contemporary needs.
-                </p>
-                <p className="text-lg text-stone-600 leading-relaxed">
-                  Our journey has been one of growth, learning, and unwavering commitment to quality. From our humble beginnings to serving over 6,000 families. Every piece we create carries the Neelamshetty family's promise of excellence, durability, and beauty.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-8 mt-12">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">25+</div>
-                  <div className="text-stone-600">Years Experience</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">6,000+</div>
-                  <div className="text-stone-600">Happy Families</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-amber-600">50+</div>
-                  <div className="text-stone-600">Skilled Artisans</div>
-                </div>
-              </div>
+              <div className="text-3xl font-bold text-amber-600">25+</div>
+              <div className="text-stone-600">Years Experience</div>
             </div>
-
-            <div className="space-y-4">
-              <img src="workshop.webp" alt="Our founder at work" className="rounded-lg shadow-lg w-full" />
-              <div className="grid grid-cols-2 gap-4">
-                <img src="workshop.webp" alt="Traditional craftsmanship" className="rounded-lg shadow-lg" />
-                <img src="workshop.webp" alt="Modern workshop" className="rounded-lg shadow-lg" />
-              </div>
+            <div>
+              <div className="text-3xl font-bold text-amber-600">6,000+</div>
+              <div className="text-stone-600">Happy Families</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-amber-600">50+</div>
+              <div className="text-stone-600">Skilled Artisans</div>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* Why Choose Us Section */}
       <section className="py-20 bg-stone-50">

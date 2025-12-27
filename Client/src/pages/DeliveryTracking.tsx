@@ -212,10 +212,7 @@ const DeliveryTracking = () => {
                 <ul className="list-disc list-inside text-stone-600">
                   {order.items.map((item: any, idx: number) => (
                     <li key={idx}>
-                      {item.name} (Qty: {item.quantity}) –{' '}
-                      {item.customizations?.wood},{' '}
-                      {item.customizations?.finish},{' '}
-                      {item.customizations?.dimensions}
+                      {item.name} (Qty: {item.quantity}) {' '}
                     </li>
                   ))}
                 </ul>

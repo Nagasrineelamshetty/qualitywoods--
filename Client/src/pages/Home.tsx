@@ -14,6 +14,11 @@ const Home = () => {
     '/image_carousel2.jpg',
     '/image_carousel3.jpg',
   ];
+  useEffect(() => {
+    if (user?.isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [user]);
 
   useEffect(() => {
     const timer = setInterval(() => {

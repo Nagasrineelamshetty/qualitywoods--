@@ -55,7 +55,7 @@ instance.interceptors.response.use(
 
         const res = await instance.post(
           '/api/auth/refresh-token',
-          { token: refreshToken },
+          { refreshToken },
           { withCredentials: true }
         );
 

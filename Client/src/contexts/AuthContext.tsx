@@ -19,7 +19,8 @@ type UserType = {
 
 interface AuthContextType {
   user: UserType | null;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>;
+  loading: boolean;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<UserType | null>; 
   signup: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -58,7 +59,19 @@ const res = await axios.post('/api/auth/refresh-token',{ refreshToken },{ withCr
           const newToken = res.data.accessToken;
           if (newToken) {
             if (rememberMe) localStorage.setItem('accessToken', newToken);
-            const userRes = await axios.get('/api/users/me');
+            // const userRes = await axios.get('/api/users/me');
+            const token =
+              localStorage.getItem("accessToken") ||
+              sessionStorage.getItem("accessToken");
+
+            if (!token) throw new Error("No access token");
+
+            const userRes = await axios.get("/api/users/me", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
             setUser(userRes.data);
           }
         }
@@ -93,7 +106,7 @@ const res = await axios.post('/api/auth/refresh-token',{ refreshToken },{ withCr
   };
 
   // Login
-  const login = async (email: string, password: string, rememberMe = false): Promise<boolean> => {
+  const login = async (email: string, password: string, rememberMe = false): Promise<UserType|null> => {
     try {
       const res = await axios.post('/api/auth/login', { email, password, rememberMe }, { withCredentials: true });
       const { accessToken, refreshToken, user } = res.data;
@@ -114,10 +127,10 @@ const res = await axios.post('/api/auth/refresh-token',{ refreshToken },{ withCr
       }
 
       setUser(normalized);
-      return true;
+      return normalized;
     } catch (err: any) {
       console.error('Login Error:', err?.response?.data?.message || err.message);
-      return false;
+      return null;
     }
   };
 
@@ -133,8 +146,9 @@ const res = await axios.post('/api/auth/refresh-token',{ refreshToken },{ withCr
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+
+      {children}
     </AuthContext.Provider>
   );
 };

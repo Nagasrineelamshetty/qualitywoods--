@@ -12,6 +12,8 @@ import collaborationRoutes from './routes/collaborationRoutes';
 import cookieParser from 'cookie-parser'; 
 import consultationRoutes from './routes/consultationRoutes';
 import userRoutes from './routes/userRoutes';
+import adminRoutes from './routes/adminRoutes';
+import productRoutes from "./routes/productRoutes";
 dotenv.config();
 
 const app = express();
@@ -36,6 +38,16 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/consultation', consultationRoutes);
 //self
 app.use('/api/users', userRoutes);
+//Admin 
+app.use('/api/admin', adminRoutes);
+//Products
+app.use("/api/products", productRoutes);
+//Uploads 
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "..", "uploads"))
+);
+
 mongoose.connect(process.env.MONGO_URI!)
   .then(() => {
     console.log('MongoDB connected');

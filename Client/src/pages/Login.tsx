@@ -25,34 +25,41 @@ const Login = () => {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const success = await login(email, password, rememberMe);
-      if (success) {
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome back to Quality Woods!',
-        });
-        navigate(from, { replace: true });
-      } else {
-        toast({
-          title: 'Login Failed',
-          description: 'Invalid email or password. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
+  try {
+    const user = await login(email, password, rememberMe);
+
+    if (user) {
       toast({
-        title: 'Login Error',
-        description: 'Something went wrong. Please try again.',
+        title: 'Login Successful',
+        description: 'Welcome back to Quality Woods!',
+      });
+
+      if (user.isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate(from, { replace: true });
+      }
+    } else {
+      toast({
+        title: 'Login Failed',
+        description: 'Invalid email or password. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (error) {
+    toast({
+      title: 'Login Error',
+      description: 'Something went wrong. Please try again.',
+      variant: 'destructive',
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-stone-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

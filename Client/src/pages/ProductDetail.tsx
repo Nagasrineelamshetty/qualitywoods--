@@ -1,71 +1,81 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from '../hooks/use-toast';
-import { useCart } from '../contexts/CartContext';
-import { useAuth } from '../contexts/AuthContext';
-import { Button } from '../components/ui/button';
-import { products } from '../data/mockData';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "../api/axios";
+import { toast } from "../hooks/use-toast";
+import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
+import { Button } from "../components/ui/button";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const product = products.find(p => p.id === id);
   const navigate = useNavigate();
 
   const { addItem, setBuyNowItem } = useCart();
   const { user } = useAuth();
 
-  const [wood, setWood] = useState('Teak');
-  const [finish, setFinish] = useState('Matte');
-  const [dimensions, setDimensions] = useState('6x3');
-  const [isPaying, setIsPaying] = useState(false);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!product) return <div>Product not found</div>;
+  // FETCH PRODUCT
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`/api/products/${id}`);
+        setProduct(res.data);
+      } catch {
+        toast({ title: "Product not found", variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // ✅ Buy Now → LOGIN REQUIRED
+    fetchProduct();
+  }, [id]);
+
+  if (loading) return <div className="p-6">Loading...</div>;
+  if (!product) return <div className="p-6">Product not found</div>;
+
+  // BUY NOW
   const handleBuyNow = () => {
     if (!user) {
-      toast({
-        title: 'Please login to continue',
-        variant: 'destructive',
-      });
-      navigate('/login', {
-        state: { redirectTo: `/products/${id}` },
-      });
+      toast({ title: "Please login to continue", variant: "destructive" });
+      navigate("/login", { state: { redirectTo: `/products/${id}` } });
       return;
     }
 
-    const itemToBuy = {
-      id: product.id,
+    setBuyNowItem({
+      id: product._id,
       name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-      customizations: { wood, finish, dimensions },
-    };
-
-    setBuyNowItem(itemToBuy);
-    navigate('/checkout?mode=buy-now');
-  };
-
-  // ✅ Add to Cart → NO LOGIN REQUIRED
-  const handleAddToCart = () => {
-    addItem({
-      id: product.id,
-      name: product.name,
+      description: product.description,
+      category: product.category,
       price: product.price,
       image: product.image,
       quantity: 1,
-      customizations: { wood, finish, dimensions },
     });
 
-    toast({ title: 'Added to cart!' });
+    navigate("/checkout?mode=buy-now");
+  };
+
+  // ADD TO CART
+  const handleAddToCart = () => {
+    addItem({
+      id: product._id,
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      price: product.price,
+      image: product.image,
+      quantity: 1,
+    });
+
+    toast({ title: "Added to cart!" });
   };
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex flex-col md:flex-row gap-8">
         <img
-          src={product.image}
+          src={`${import.meta.env.VITE_API_URL}${product.image}`}
           alt={product.name}
           className="w-full md:w-1/2 rounded-lg object-cover"
         />
@@ -75,7 +85,8 @@ const ProductDetails = () => {
             {product.name}
           </h1>
 
-          <p className="text-stone-600 mb-4">
+          {/* ✅ Description = all specs */}
+          <p className="text-stone-600 mb-6 whitespace-pre-line">
             {product.description}
           </p>
 
@@ -83,47 +94,6 @@ const ProductDetails = () => {
             ₹{product.price.toLocaleString()}
           </p>
 
-          {/* Customization Options */}
-          <div className="mb-4">
-            <label className="block mb-1">Wood Type</label>
-            <select
-              value={wood}
-              onChange={(e) => setWood(e.target.value)}
-              className="w-full px-4 py-2 border rounded"
-            >
-              <option value="Teak">Teak</option>
-              <option value="Sheesham">Sheesham</option>
-              <option value="Oak">Oak</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-1">Finish</label>
-            <select
-              value={finish}
-              onChange={(e) => setFinish(e.target.value)}
-              className="w-full px-4 py-2 border rounded"
-            >
-              <option value="Matte">Matte</option>
-              <option value="Glossy">Glossy</option>
-              <option value="Natural">Natural</option>
-            </select>
-          </div>
-
-          <div className="mb-6">
-            <label className="block mb-1">Dimensions</label>
-            <select
-              value={dimensions}
-              onChange={(e) => setDimensions(e.target.value)}
-              className="w-full px-4 py-2 border rounded"
-            >
-              <option value="6x3">6x3</option>
-              <option value="5x2.5">5x2.5</option>
-              <option value="4x2">4x2</option>
-            </select>
-          </div>
-
-          {/* Action Buttons */}
           <div className="flex gap-4">
             <Button
               onClick={handleAddToCart}
@@ -131,13 +101,11 @@ const ProductDetails = () => {
             >
               Add to Cart
             </Button>
-
             <Button
               onClick={handleBuyNow}
-              disabled={isPaying}
               className="bg-amber-600 hover:bg-amber-700"
             >
-              {isPaying ? 'Processing...' : 'Buy Now'}
+              Buy Now
             </Button>
           </div>
         </div>
