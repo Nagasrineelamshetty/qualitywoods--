@@ -4,6 +4,7 @@ import { verifyAdmin } from "../middleware/adminmiddleware";
 import Order from "../models/Order";
 import Product from "../models/Product";
 import { upload } from "../utils/upload";
+import Consultation from "../models/Consultation";
 
 const router = express.Router();
 
@@ -179,6 +180,56 @@ router.get(
     } catch {
       res.status(500).json({
         message: "Failed to fetch dashboard stats",
+      });
+    }
+  }
+);
+// =======================
+// 📞 Get All Consultations (Admin)
+// =======================
+router.get(
+  "/consultations",
+  verifyToken,
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      const consultations = await Consultation.find().sort({
+        createdAt: -1,
+      });
+
+      res.json(consultations);
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Failed to fetch consultations",
+        error: error.message,
+      });
+    }
+  }
+);
+// =======================
+// 📞 Mark Consultation as Contacted
+// =======================
+router.patch(
+  "/consultations/:id/contacted",
+  verifyToken,
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      const consultation = await Consultation.findByIdAndUpdate(
+        req.params.id,
+        { contacted: true },
+        { new: true }
+      );
+
+      if (!consultation) {
+        return res.status(404).json({ message: "Consultation not found" });
+      }
+
+      res.json(consultation);
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Failed to update consultation status",
+        error: error.message,
       });
     }
   }

@@ -6,9 +6,9 @@ const router = express.Router();
 
 // POST /api/consultation
 router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
-  const { name, email, phone, date, timeFrom, timeTo } = req.body;
+  const { name, email, phone, date, time } = req.body;
 
-  if (!name || !email || !phone || !date || !timeFrom || !timeTo) {
+  if (!name || !email || !phone || !date || !time) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
@@ -18,8 +18,7 @@ router.post('/', verifyToken, async (req: AuthenticatedRequest, res) => {
       email,
       phone,
       date,
-      timeFrom,
-      timeTo,
+      time
     });
 
     res.status(201).json({ message: 'Consultation request received', consultation });
