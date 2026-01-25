@@ -33,12 +33,12 @@ userSchema.pre<IUser>('save', async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
-
+// Checks if passwords are matching and encrypts them
 userSchema.methods.matchPassword = async function (enteredPassword: string): Promise<boolean> {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate a reset token and set expiry
+// Generate a reset token and set expiry date and sends the link to email
 userSchema.methods.generatePasswordResetToken = function (): string {
   const resetToken = crypto.randomBytes(20).toString('hex');
   this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
@@ -47,4 +47,4 @@ userSchema.methods.generatePasswordResetToken = function (): string {
 };
 
 const User = mongoose.model<IUser>('User', userSchema);
-export default User;
+export default User;     

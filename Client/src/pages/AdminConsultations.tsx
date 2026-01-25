@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import axios from "../api/axios";
 import { Card } from "../components/ui/card";
 import { toast } from "../hooks/use-toast";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../components/ui/select";
 
 type Consultation = {
   _id: string;
@@ -12,7 +19,7 @@ type Consultation = {
   time?: string;
   timeFrom?: string;
   timeTo?: string;
-  contacted: boolean; // ✅ REQUIRED
+  contacted: boolean;
   createdAt: string;
 };
 
@@ -20,30 +27,31 @@ const AdminConsultations = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchConsultations = async () => {
-      try {
-        const res = await axios.get("/api/admin/consultations");
-        setConsultations(res.data);
-      } catch {
-        toast({
-          title: "Error",
-          description: "Failed to load consultations",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchConsultations = async () => {
+    try {
+      const res = await axios.get("/api/admin/consultations");
+      setConsultations(res.data);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to load consultations",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchConsultations();
   }, []);
 
-  // ✅ Mark consultation as contacted
-  const markAsContacted = async (id: string) => {
+  // ✅ Update status via dropdown
+  const updateStatus = async (id: string, contacted: boolean) => {
     try {
       const res = await axios.patch(
-        `/api/admin/consultations/${id}/contacted`
+        `/api/admin/consultations/${id}/status`,
+        { contacted }
       );
 
       setConsultations((prev) =>
@@ -52,7 +60,7 @@ const AdminConsultations = () => {
 
       toast({
         title: "Updated",
-        description: "Marked as contacted",
+        description: `Marked as ${contacted ? "Contacted" : "New"}`,
       });
     } catch {
       toast({
@@ -78,7 +86,7 @@ const AdminConsultations = () => {
       ) : (
         consultations.map((c) => (
           <Card key={c._id} className="p-4">
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start gap-4">
               {/* Left info */}
               <div>
                 <p className="font-semibold text-amber-900">{c.name}</p>
@@ -87,33 +95,35 @@ const AdminConsultations = () => {
               </div>
 
               {/* Right info */}
-              <div className="text-right space-y-1">
-                {/* Status badge */}
-                <span
-                  className={`inline-block px-2 py-1 text-xs rounded-full font-medium ${
-                    c.contacted
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
+              <div className="flex flex-col items-end gap-1 min-w-[140px]">
+                {/* ✅ Status dropdown */}
+                <Select
+                  value={c.contacted ? "contacted" : "new"}
+                  onValueChange={(value) =>
+                    updateStatus(c._id, value === "contacted")
+                  }
                 >
-                  {c.contacted ? "Contacted" : "New"}
-                </span>
-
-                {/* Action button */}
-                {!c.contacted && (
-                  <button
-                    onClick={() => markAsContacted(c._id)}
-                    className="block mt-2 text-xs px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700"
+                  <SelectTrigger
+                    className={`h-8 text-xs font-medium ${
+                      c.contacted
+                        ? "bg-green-100 text-green-800 border-green-300"
+                        : "bg-red-100 text-red-800 border-red-300"
+                    }`}
                   >
-                    Mark as Contacted
-                  </button>
-                )}
+                    <SelectValue />
+                  </SelectTrigger>
 
-                <p className="text-sm text-stone-700">
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="contacted">Contacted</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <p className="text-xs text-stone-600">
                   {new Date(c.date).toLocaleDateString()}
                 </p>
 
-                <p className="text-sm font-medium text-stone-700">
+                <p className="text-xs font-medium text-stone-700">
                   {c.time ? c.time : `${c.timeFrom} – ${c.timeTo}`}
                 </p>
               </div>

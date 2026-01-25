@@ -6,7 +6,7 @@ import { Document } from 'mongoose';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const router = express.Router();
+const router = express.Router();    
 
 // Generate Access Token (short-lived)
 const generateAccessToken = (user: IUser & Document): string => {
@@ -180,5 +180,4 @@ router.post('/reset-password/:token', async (req, res) => {
   }
 });
 
-
-export default router;
+export default router;    

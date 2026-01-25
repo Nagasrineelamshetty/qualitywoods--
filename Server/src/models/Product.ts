@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ProductDocument extends Document {
   name: string;
-  description: string;   // 👈 all specs go here
+  description: string;   
   price: number;
   image: string;
   category: string;

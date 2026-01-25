@@ -14,7 +14,6 @@ const AdminProducts = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
-  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -35,14 +34,12 @@ const AdminProducts = () => {
     fetchProducts();
   }, []);
 
-  // Delete product
   const handleDeleteProduct = async (productId: string) => {
     try {
       await axios.delete(`/api/admin/products/${productId}`);
       setProducts((prev) =>
         prev.filter((product) => product._id !== productId)
       );
-
       toast({
         title: "Product deleted",
         description: "Product removed successfully",
@@ -58,7 +55,6 @@ const AdminProducts = () => {
 
   return (
     <div className="p-6">
-      {/* 🔒 Constrained container */}
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -78,7 +74,7 @@ const AdminProducts = () => {
           </Button>
         </div>
 
-        {/* Products */}
+        {/* Products Grid */}
         {loading ? (
           <p>Loading products...</p>
         ) : (
@@ -86,23 +82,28 @@ const AdminProducts = () => {
             {products.map((product) => (
               <Card
                 key={product._id}
-                className="bg-white overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-white hover:shadow-lg transition-shadow overflow-hidden"
               >
-                {/* 📸 Bigger image */}
-                <img
-                  src={`${API_BASE}${product.image}`}
-                  alt={product.name}
-                  className="w-full h-64 lg:h-72 object-cover"
-                />
+                {/* CARD GRID */}
+                <div className="grid grid-rows-[16rem_auto_auto_auto_auto_auto] h-full">
+                  {/* Image */}
+                  <img
+                    src={`${API_BASE}${product.image}`}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
 
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-amber-900 leading-snug">
+                  {/* Title */}
+                  <div className="px-4 pt-3">
+                    <h3 className="font-semibold text-amber-900 line-clamp-2">
                       {product.name}
                     </h3>
+                  </div>
 
+                  {/* Stock */}
+                  <div className="px-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs whitespace-nowrap ${
+                      className={`inline-block px-2 py-1 rounded-full text-xs ${
                         product.isInStock
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
@@ -112,15 +113,18 @@ const AdminProducts = () => {
                     </span>
                   </div>
 
-                  <p className="text-sm text-stone-600">
+                  {/* Category */}
+                  <div className="px-4 text-sm text-stone-600">
                     {product.category}
-                  </p>
+                  </div>
 
-                  <p className="font-bold text-amber-600 mb-3">
+                  {/* Price */}
+                  <div className="px-4 font-bold text-amber-600">
                     ₹{product.price.toLocaleString()}
-                  </p>
+                  </div>
 
-                  <div className="flex justify-end gap-2">
+                  {/* Actions */}
+                  <div className="px-4 pb-3 flex justify-end gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -135,7 +139,9 @@ const AdminProducts = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteProduct(product._id)}
+                      onClick={() =>
+                        handleDeleteProduct(product._id)
+                      }
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 size={16} />
@@ -162,7 +168,9 @@ const AdminProducts = () => {
                 );
                 if (exists) {
                   return prev.map((p) =>
-                    p._id === updatedProduct._id ? updatedProduct : p
+                    p._id === updatedProduct._id
+                      ? updatedProduct
+                      : p
                   );
                 }
                 return [updatedProduct, ...prev];

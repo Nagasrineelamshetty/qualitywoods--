@@ -358,7 +358,7 @@ const Checkout = () => {
                     checked={paymentMethod === 'cod'} onChange={(e) => setPaymentMethod(e.target.value)}
                     className="h-4 w-4 text-amber-600 focus:ring-amber-500" />
                   <label htmlFor="cod" className="flex items-center">
-                    <span className="text-stone-700 font-medium">Cash on Delivery</span>
+                    <span className="text-stone-700 font-medium">Cash/Pay on Delivery</span>
                     <span className="ml-2 text-sm text-stone-500">(Pay when furniture is delivered)</span>
                   </label>
                 </div>

@@ -210,19 +210,29 @@ router.get(
 // 📞 Mark Consultation as Contacted
 // =======================
 router.patch(
-  "/consultations/:id/contacted",
+  "/consultations/:id/status",
   verifyToken,
   verifyAdmin,
   async (req, res) => {
     try {
+      const { contacted } = req.body;
+
+      if (typeof contacted !== "boolean") {
+        return res.status(400).json({
+          message: "Invalid status value",
+        });
+      }
+
       const consultation = await Consultation.findByIdAndUpdate(
         req.params.id,
-        { contacted: true },
+        { contacted },
         { new: true }
       );
 
       if (!consultation) {
-        return res.status(404).json({ message: "Consultation not found" });
+        return res.status(404).json({
+          message: "Consultation not found",
+        });
       }
 
       res.json(consultation);
@@ -234,5 +244,6 @@ router.patch(
     }
   }
 );
+
 
 export default router;
