@@ -1,15 +1,22 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
 import axios from "../api/axios";
 import { useAuth } from "./AuthContext";
 
+/* ================= TYPES ================= */
+
 interface CartItem {
-  id: string;
+  productId: string;
   name: string;
-  description: string;
-  category: string;
   price: number;
   image: string;
   quantity: number;
+  description?: string;
+  category?: string;
 }
 
 interface CartState {
@@ -20,16 +27,18 @@ interface CartState {
 }
 
 type CartAction =
-  | { type: "LOAD_CART"; payload: CartItem[] }
   | { type: "SET_LOADING"; payload: boolean }
+  | { type: "LOAD_CART"; payload: CartItem[] }
   | { type: "ADD_ITEM"; payload: CartItem }
   | { type: "REMOVE_ITEM"; payload: string }
-  | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
+  | { type: "UPDATE_QUANTITY"; payload: { productId: string; quantity: number } }
   | { type: "CLEAR_CART" }
   | { type: "SET_BUY_NOW_ITEM"; payload: CartItem }
   | { type: "CLEAR_BUY_NOW_ITEM" };
 
 const GUEST_CART_KEY = "guest_cart";
+
+/* ================= REDUCER ================= */
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   let items: CartItem[];
@@ -39,20 +48,24 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return { ...state, loading: action.payload };
 
     case "LOAD_CART":
-      items = action.payload;
       return {
         ...state,
-        items,
-        total: items.reduce((s, i) => s + i.price * i.quantity, 0),
+        items: action.payload,
+        total: action.payload.reduce(
+          (sum, i) => sum + i.price * i.quantity,
+          0
+        ),
         loading: false,
-        buyNowItem: state.buyNowItem,
       };
 
     case "ADD_ITEM": {
-      const existing = state.items.find(i => i.id === action.payload.id);
+      const existing = state.items.find(
+        i => i.productId === action.payload.productId
+      );
+
       items = existing
         ? state.items.map(i =>
-            i.id === action.payload.id
+            i.productId === action.payload.productId
               ? { ...i, quantity: i.quantity + action.payload.quantity }
               : i
           )
@@ -61,12 +74,12 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
     }
 
     case "REMOVE_ITEM":
-      items = state.items.filter(i => i.id !== action.payload);
+      items = state.items.filter(i => i.productId !== action.payload);
       break;
 
     case "UPDATE_QUANTITY":
       items = state.items.map(i =>
-        i.id === action.payload.id
+        i.productId === action.payload.productId
           ? { ...i, quantity: action.payload.quantity }
           : i
       );
@@ -95,88 +108,133 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   };
 };
 
+/* ================= CONTEXT ================= */
+
 const CartContext = createContext<any>(null);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [state, dispatch] = useReducer(cartReducer, {
     items: [],
     total: 0,
     loading: true,
     buyNowItem: sessionStorage.getItem("buyNowItem")
-    ? JSON.parse(sessionStorage.getItem("buyNowItem")!)
-    : null,
+      ? JSON.parse(sessionStorage.getItem("buyNowItem")!)
+      : null,
   });
 
   const { user } = useAuth();
 
-  /* LOAD CART (guest vs logged-in separation) */
+  /* ================= LOAD CART ================= */
+
   useEffect(() => {
-    if (!user?._id) {
-      const stored = localStorage.getItem(GUEST_CART_KEY);
-      dispatch({
-        type: "LOAD_CART",
-        payload: stored ? JSON.parse(stored) : [],
-      });
-    } else {
-      // reset cart on login, backend will sync next
-      dispatch({
-        type: "LOAD_CART",
-        payload: [], // cart items only
-  });
-    }
+    const loadCart = async () => {
+      dispatch({ type: "SET_LOADING", payload: true });
+
+      // Guest → localStorage
+      if (!user?._id) {
+        const stored = localStorage.getItem(GUEST_CART_KEY);
+        dispatch({
+          type: "LOAD_CART",
+          payload: stored ? JSON.parse(stored) : [],
+        });
+        return;
+      }
+
+      // Logged-in → backend
+      try {
+        const res = await axios.get("/api/cart");
+
+        const items: CartItem[] = (res.data.items || []).map((i: any) => ({
+          productId: i.productId,
+          name: i.name,
+          price: i.price,
+          image: i.image,
+          quantity: i.quantity,
+        }));
+
+        dispatch({ type: "LOAD_CART", payload: items });
+      } catch (err) {
+        console.error("Failed to load cart", err);
+        dispatch({ type: "LOAD_CART", payload: [] });
+      }
+    };
+
+    loadCart();
   }, [user?._id]);
 
-  /* SAVE CART (EMPTY CARTS INCLUDED ✅) */
-  useEffect(() => {
-    if (state.loading) return;
+  /* ================= PERSIST CART ================= */
 
-    // Guest user → localStorage
-    if (!user?._id) {
-      localStorage.setItem(GUEST_CART_KEY, JSON.stringify(state.items));
-      return;
+  const persistCart = async (items: CartItem[]) => {
+    try {
+      await axios.post("/api/cart", {
+        items: items.map(i => ({
+          productId: i.productId,
+          name: i.name,
+          price: i.price,
+          image: i.image,
+          quantity: i.quantity,
+          customizations: {},
+        })),
+      });
+    } catch (err) {
+      console.error("Cart persistence failed", err);
     }
+  };
 
-    const token = localStorage.getItem("accessToken");
-    if (!token) return;
-
-    const payload = state.items.map(i => ({
-      id: i.id,
-      name: i.name,
-      description: i.description,
-      category: i.category,
-      price: i.price,
-      image: i.image,
-      quantity: i.quantity,
-    }));
-
-    const t = setTimeout(async () => {
-      try {
-        await axios.post(
-          "/api/cart",
-          { items: payload }, // empty array allowed
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (e) {
-        console.error("Cart save failed", e);
-      }
-    }, 400);
-
-    return () => clearTimeout(t);
-  }, [state.items, user?._id, state.loading]);
+  /* ================= PROVIDER API ================= */
 
   return (
     <CartContext.Provider
       value={{
         state,
-        addItem: (item: CartItem) =>
-          dispatch({ type: "ADD_ITEM", payload: item }),
-        removeItem: (id: string) =>
-          dispatch({ type: "REMOVE_ITEM", payload: id }),
-        updateQuantity: (id: string, quantity: number) =>
-          dispatch({ type: "UPDATE_QUANTITY", payload: { id, quantity } }),
-        clearCart: () => dispatch({ type: "CLEAR_CART" }),
+
+        addItem: (item: CartItem) => {
+          const updated = (() => {
+            const existing = state.items.find(
+              i => i.productId === item.productId
+            );
+            return existing
+              ? state.items.map(i =>
+                  i.productId === item.productId
+                    ? { ...i, quantity: i.quantity + item.quantity }
+                    : i
+                )
+              : [...state.items, item];
+          })();
+
+          dispatch({ type: "ADD_ITEM", payload: item });
+          persistCart(updated);
+        },
+
+        removeItem: (productId: string) => {
+          const updated = state.items.filter(
+            i => i.productId !== productId
+          );
+          dispatch({ type: "REMOVE_ITEM", payload: productId });
+          persistCart(updated);
+        },
+
+        updateQuantity: (productId: string, quantity: number) => {
+          const updated = state.items.map(i =>
+            i.productId === productId ? { ...i, quantity } : i
+          );
+          dispatch({
+            type: "UPDATE_QUANTITY",
+            payload: { productId, quantity },
+          });
+          persistCart(updated);
+        },
+
+        clearCart: () => {
+          dispatch({ type: "CLEAR_CART" });
+          persistCart([]);
+        },
+
         setBuyNowItem: (item: CartItem) =>
           dispatch({ type: "SET_BUY_NOW_ITEM", payload: item }),
+
         clearBuyNowItem: () =>
           dispatch({ type: "CLEAR_BUY_NOW_ITEM" }),
       }}

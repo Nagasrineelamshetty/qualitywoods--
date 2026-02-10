@@ -44,7 +44,7 @@ const ProductDetails = () => {
     }
 
     setBuyNowItem({
-      id: product._id,
+      productId: product._id,
       name: product.name,
       description: product.description,
       category: product.category,
@@ -59,7 +59,7 @@ const ProductDetails = () => {
   // ADD TO CART
   const handleAddToCart = () => {
     addItem({
-      id: product._id,
+      productId:product._id,
       name: product.name,
       description: product.description,
       category: product.category,
