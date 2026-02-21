@@ -2,20 +2,27 @@ import express, { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import mongoose from 'mongoose';
 import Order from '../models/Order';
+import Product from '../models/Product'; 
 import dotenv from 'dotenv';
 import { verifyToken } from '../middleware/authmiddleware';
 import { verifyAdmin } from '../middleware/adminmiddleware';
+
 dotenv.config();
 const router = express.Router();
 
-// Razorpay instance
+/* -----------------------
+   Razorpay instance
+----------------------- */
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID as string,
   key_secret: process.env.RAZORPAY_SECRET as string,
 });
 
-// Email transporter
+/* -----------------------
+   Email transporter
+----------------------- */
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -24,9 +31,61 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Send confirmation email
-const sendOrderEmail = async (email: string, orderId: string, total: number) => {
+/* -----------------------
+   Calculate Total SECURELY
+----------------------- */
+const calculateTotalFromDB = async (items: any[]) => {
+  let total = 0;
+
+  for (const item of items) {
+    const product = await Product.findById(item._id || item.productId);
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    total += product.price * item.quantity;
+  }
+
+  return total;
+};
+
+/* -----------------------
+   Normalize Items
+----------------------- */
+const normalizeItems = async (items: any[]) => {
+  const formattedItems = [];
+
+  for (const item of items) {
+    const product = await Product.findById(item._id || item.productId);
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    formattedItems.push({
+      productId: product._id,
+      name: product.name,
+      price: product.price, // 🔥 price from DB
+      quantity: item.quantity,
+      image: product.image,
+      customizations: item.customizations || {},
+    });
+  }
+
+  return formattedItems;
+};
+
+/* -----------------------
+   Send confirmation email
+----------------------- */
+const sendOrderEmail = async (
+  email: string,
+  orderId: string,
+  total: number
+) => {
   if (!email) return;
+
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
@@ -35,68 +94,82 @@ const sendOrderEmail = async (email: string, orderId: string, total: number) => 
   });
 };
 
-// -----------------------
-// Create Razorpay Order
-// -----------------------
+/* =========================================================
+   CREATE RAZORPAY ORDER (SECURE)
+========================================================= */
 router.post('/create-order', async (req: Request, res: Response) => {
   try {
-    const { amount } = req.body;
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ message: 'Amount is required and must be > 0' });
+    const { items } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: 'Items are required' });
     }
 
-    const options = {
-      amount: Math.round(amount * 100), // convert to paise
+    const total = await calculateTotalFromDB(items);
+
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(total * 100),
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
-    };
-
-    const order = await razorpay.orders.create(options);
-    res.json({
-      id: order.id,
-      currency: order.currency,
-      amount: order.amount,
     });
+
+    res.json({
+      id: razorpayOrder.id,
+      currency: razorpayOrder.currency,
+      amount: razorpayOrder.amount,
+    });
+
   } catch (error: any) {
-    console.error('Error creating order:', error);
-    res.status(500).json({ message: 'Failed to create order', error: error.message });
+    console.error('Error creating Razorpay order:', error);
+    res.status(500).json({
+      message: 'Failed to create order',
+      error: error.message,
+    });
   }
 });
 
-// -----------------------
-// Save Order (COD or manual save)
-// -----------------------
+/* =========================================================
+   SAVE ORDER (COD) - SECURE
+========================================================= */
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { userId, items, total, razorpayOrderId, status, estimatedDelivery, email } = req.body;
+    const { userId, items, email } = req.body;
 
-    if (!userId || !items || !total) {
+    if (!userId || !items) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    const total = await calculateTotalFromDB(items);
+    const formattedItems = await normalizeItems(items);
+
     const order = new Order({
       user: userId,
-      items,
+      items: formattedItems,
       total,
-      razorpayOrderId: razorpayOrderId || `COD-${Date.now()}`,
-      status: status || 'Received',
-      estimatedDelivery: estimatedDelivery || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      razorpayOrderId: `COD-${Date.now()}`,
+      status: 'Received',
+      estimatedDelivery: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000
+      ),
     });
 
     await order.save();
-
     await sendOrderEmail(email, order.razorpayOrderId!, total);
 
     res.status(201).json({ message: 'Order saved successfully', order });
+
   } catch (error: any) {
     console.error('Error saving order:', error);
-    res.status(500).json({ message: 'Failed to save order', error: error.message });
+    res.status(500).json({
+      message: 'Failed to save order',
+      error: error.message,
+    });
   }
 });
 
-// -----------------------
-// Verify Razorpay Payment
-// -----------------------
+/* =========================================================
+   VERIFY RAZORPAY PAYMENT - SECURE
+========================================================= */
 router.post('/verify-payment', async (req: Request, res: Response) => {
   try {
     const {
@@ -105,102 +178,78 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
       razorpay_signature,
       userId,
       items,
-      total,
       email,
-      shippingInfo,
     } = req.body;
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ message: 'Missing Razorpay payment details' });
+    if (
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature
+    ) {
+      return res.status(400).json({
+        message: 'Missing Razorpay payment details',
+      });
     }
 
-    // Create signature
     const body = razorpay_order_id + '|' + razorpay_payment_id;
+
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_SECRET as string)
       .update(body)
       .digest('hex');
 
-    console.log('Received signature:', razorpay_signature);
-    console.log('Expected signature:', expectedSignature);
-
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ message: 'Payment verification failed' });
+      return res.status(400).json({
+        message: 'Payment verification failed',
+      });
     }
+
+    // 🔥 Recalculate again (never trust frontend total)
+    const total = await calculateTotalFromDB(items);
+    const formattedItems = await normalizeItems(items);
 
     const order = new Order({
       user: userId,
-      items,
+      items: formattedItems,
       total,
       razorpayOrderId: razorpay_order_id,
       status: 'Received',
-      shippingInfo,
-      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      estimatedDelivery: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000
+      ),
     });
 
     await order.save();
+    await sendOrderEmail(email, razorpay_order_id, total);
 
-    await sendOrderEmail(email, order.razorpayOrderId!, total);
+    res.status(201).json({
+      message: 'Payment verified & order saved',
+      order,
+    });
 
-    res.status(201).json({ message: 'Payment verified & order saved', order });
   } catch (error: any) {
     console.error('Error verifying payment:', error);
-    res.status(500).json({ message: 'Payment verification failed', error: error.message });
+    res.status(500).json({
+      message: 'Payment verification failed',
+      error: error.message,
+    });
   }
 });
-
-// -----------------------
-// Get Orders for a User
-// -----------------------
+/* =========================================================
+   GET ORDERS FOR USER
+========================================================= */
 router.get('/user/:userId', async (req: Request, res: Response) => {
   try {
-    const orders = await Order.find({ user: req.params.userId }).sort({ createdAt: -1 });
-    res.json(orders);
-  } catch (error: any) {
-    console.error('Error fetching user orders:', error);
-    res.status(500).json({ message: 'Failed to fetch user orders', error: error.message });
-  }
-});
-//Admin Order Management
-router.get('/admin/orders', verifyToken, verifyAdmin, async (req: Request, res: Response) => {
-  try {
-    const orders = await Order.find()
-      .populate('user', 'name email')
+    const orders = await Order.find({ user: req.params.userId })
       .sort({ createdAt: -1 });
 
     res.json(orders);
-  } catch {
-    res.status(500).json({ message: 'Failed to fetch orders' });
+  } catch (error: any) {
+    console.error('Error fetching user orders:', error);
+    res.status(500).json({
+      message: 'Failed to fetch user orders',
+      error: error.message,
+    });
   }
 });
-router.put(
-  '/admin/orders/:id/status',
-  verifyToken,
-  verifyAdmin,
-  async (req: Request, res: Response) => {
-    const { status } = req.body;
-
-    const allowedStatus = [
-      'Received',
-      'In Production',
-      'Shipped',
-      'Delivered',
-    ];
-
-    if (!allowedStatus.includes(status)) {
-      return res.status(400).json({ message: 'Invalid order status' });
-    }
-
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-      ).populate("user", "name email");   
-
-      res.json(order);
-
-  }
-);
-
-
 export default router;

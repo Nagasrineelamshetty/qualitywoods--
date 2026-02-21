@@ -7,14 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from '../hooks/use-toast';
+import instance from '../api/axios';
 const API_BASE = import.meta.env.VITE_API_URL;
+
 const Checkout = () => {
   const { state, clearCart, clearBuyNowItem } = useCart();
   const buyNowItem = state.buyNowItem;
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  // Buy Now state
+  
   const [isBuyNow, setIsBuyNow] = useState(false);
   const [currentBuyNowItem, setCurrentBuyNowItem] = useState<any>(null);
 
@@ -25,7 +26,6 @@ const Checkout = () => {
     if (buyNowMode) {
       const itemFromState = buyNowItem;
       const itemFromStorage = JSON.parse(sessionStorage.getItem('buyNowItem') || 'null');
-
       const currentItem = itemFromState || itemFromStorage;
 
       if (!currentItem) {
@@ -73,11 +73,8 @@ const Checkout = () => {
   };
 
   const generateCodOrderId = () => {
-  const prefix = 'order_';
-  const randomStr = Math.random().toString(36).substring(2, 12); // 10 char random string
-  return prefix + randomStr;
-};
-
+    return 'order_' + Math.random().toString(36).substring(2, 12);
+  };
 
   const handlePlaceOrder = async () => {
     if (!validateForm()) {
@@ -95,27 +92,17 @@ const Checkout = () => {
       const itemsToOrder = isBuyNow && currentBuyNowItem ? [currentBuyNowItem] : state.items;
 
       if (paymentMethod === 'cod') {
-        // COD Order
-        const token = localStorage.getItem('accessToken');
         const codOrderId = generateCodOrderId();
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' ,
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-              userId: user._id,
-              razorpayOrderId: codOrderId,
-              email: shippingInfo.email,
-              items: itemsToOrder,
-              total,
-              estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-              status: 'Received',
-}),
 
+        await instance.post('/api/orders', {
+          userId: user._id,
+          razorpayOrderId: codOrderId,
+          email: shippingInfo.email,
+          items: itemsToOrder,
+          total,
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          status: 'Received',
         });
-
-        if (!res.ok) throw new Error('Failed to place COD order');
 
         toast({
           title: "Order Created Successfully!",
@@ -129,9 +116,11 @@ const Checkout = () => {
         }
 
         navigate('/track');
+
       } else if (paymentMethod === 'razorpay') {
-        initiateRazorpayPayment(itemsToOrder);
+        await initiateRazorpayPayment(itemsToOrder);
       }
+
     } catch (error) {
       toast({
         title: "Order Failed",
@@ -145,19 +134,10 @@ const Checkout = () => {
   };
 
   const initiateRazorpayPayment = async (items: any[]) => {
-    setIsProcessing(true);
-
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/create-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-         },
-        body: JSON.stringify({ amount: total})
+      const { data } = await instance.post('/api/orders/create-order', {
+        items:items
       });
-
-      const data = await res.json();
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -168,54 +148,39 @@ const Checkout = () => {
         order_id: data.id,
         handler: async (response: any) => {
           try {
-            const token = localStorage.getItem('accessToken')
-            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/orders/verify-payment`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-               },
-              body: JSON.stringify({
+            const secureItems = items.map((item) => ({
+              _id: item._id || item.productId,  
+              quantity: item.quantity,
+              customizations: item.customizations || {},
+            }));
+            await instance.post('/api/orders/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               userId: user._id,
-              email: shippingInfo.email,
-              items,
-              total,
-              shippingInfo,
-}),
-
+              items: secureItems,  
+              email: user.email,
             });
 
-            const result = await verifyRes.json();
+            toast({
+              title: "Payment Successful!",
+              description: "Your Razorpay order has been placed."
+            });
 
-            if (verifyRes.ok) {
-              toast({
-                title: "Payment Successful!",
-                description: "Your Razorpay order has been placed."
-              });
-
-              if (!isBuyNow) clearCart();
-              if (isBuyNow) {
-                clearBuyNowItem();
-                localStorage.removeItem('buyNowItem');
-              }
-
-              navigate('/track');
-            } else {
-              toast({
-                title: "Verification Failed",
-                description: result.message || "Could not verify payment.",
-                variant: "destructive"
-              });
+            if (!isBuyNow) clearCart();
+            if (isBuyNow) {
+              clearBuyNowItem();
+              localStorage.removeItem('buyNowItem');
             }
+
+            navigate('/track');
+
           } catch (error) {
             toast({
-              title: "Payment Error",
-              description: "Something went wrong while verifying your payment.",
+              title: "Verification Failed",
+              description: "Could not verify payment.",
               variant: "destructive"
             });
-            console.error(error);
           }
         },
         prefill: {
@@ -228,6 +193,7 @@ const Checkout = () => {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
+
     } catch (error) {
       toast({
         title: "Payment Initialization Failed",
@@ -235,8 +201,6 @@ const Checkout = () => {
         variant: "destructive"
       });
       console.error(error);
-    } finally {
-      setIsProcessing(false);
     }
   };
 

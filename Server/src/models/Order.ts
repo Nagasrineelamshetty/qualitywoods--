@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 interface IItem {
-  id: string;
+  productId: mongoose.Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
@@ -15,7 +15,7 @@ interface IItem {
 
 export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;
-  razorpayOrderId?: string;  // Optional for COD
+  razorpayOrderId?: string;
   items: IItem[];
   status: 'Received' | 'In Production' | 'Shipped' | 'Delivered';
   total: number;
@@ -26,14 +26,21 @@ export interface IOrder extends Document {
 const OrderSchema = new Schema<IOrder>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    razorpayOrderId: { type: String, required: false }, // Not mandatory now
+
+    razorpayOrderId: { type: String },
+
     items: [
       {
-        id: { type: String, required: true },
+        productId: {
+          type: Schema.Types.ObjectId,
+          required: true,
+          ref: 'Product', // optional but recommended
+        },
         name: { type: String, required: true },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },
         image: { type: String, required: true },
+
         customizations: {
           wood: { type: String },
           finish: { type: String },
@@ -41,17 +48,22 @@ const OrderSchema = new Schema<IOrder>(
         },
       },
     ],
+
     status: {
       type: String,
       enum: ['Received', 'In Production', 'Shipped', 'Delivered'],
       default: 'Received',
     },
+
     total: { type: Number, required: true },
-    estimatedDelivery: { type: Date }, // Can be optional
+
+    estimatedDelivery: { type: Date },
+
     orderDate: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
 const Order = mongoose.model<IOrder>('Order', OrderSchema);
+
 export default Order;
