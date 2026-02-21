@@ -12,6 +12,7 @@ import { Card } from "../components/ui/card";
 import { toast } from "../hooks/use-toast";
 import axios from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const STATUS_STEPS = [
   { key: "Received", label: "Order Received", icon: Package },
@@ -35,9 +36,9 @@ const DeliveryTracking = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const navigate= useNavigate();
   const fetchOrders = async () => {
-    if (!user?._id) return;
+    
 
     try {
       const token =
@@ -57,9 +58,14 @@ const DeliveryTracking = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, [user]);
+  if (!user) {
+    setLoading(false);
+    navigate("/login", { replace: true });
+    return;
+  }
 
+  fetchOrders();
+}, [user]);
   const getStepIndex = (status: string) =>
     STATUS_STEPS.findIndex((s) => s.key === status);
 

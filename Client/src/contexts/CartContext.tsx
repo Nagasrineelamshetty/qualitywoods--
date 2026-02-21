@@ -129,59 +129,90 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   /* ================= LOAD CART ================= */
 
   useEffect(() => {
-    const loadCart = async () => {
-      dispatch({ type: "SET_LOADING", payload: true });
+  const loadCart = async () => {
+    dispatch({ type: "SET_LOADING", payload: true });
 
-      // Guest → localStorage
-      if (!user?._id) {
-        const stored = localStorage.getItem(GUEST_CART_KEY);
-        dispatch({
-          type: "LOAD_CART",
-          payload: stored ? JSON.parse(stored) : [],
-        });
-        return;
-      }
+    const guestCart = localStorage.getItem(GUEST_CART_KEY);
+    const parsedGuestCart: CartItem[] = guestCart
+      ? JSON.parse(guestCart)
+      : [];
 
-      // Logged-in → backend
-      try {
-        const res = await axios.get("/api/cart");
+    // 🧑 If NOT logged in → load guest cart
+    if (!user?._id) {
+      dispatch({ type: "LOAD_CART", payload: parsedGuestCart });
+      return;
+    }
 
-        const items: CartItem[] = (res.data.items || []).map((i: any) => ({
+    // 👤 If logged in → fetch backend cart
+    try {
+      const res = await axios.get("/api/cart");
+
+      const backendItems: CartItem[] = (res.data.items || []).map(
+        (i: any) => ({
           productId: i.productId,
           name: i.name,
           price: i.price,
           image: i.image,
           quantity: i.quantity,
-        }));
+        })
+      );
 
-        dispatch({ type: "LOAD_CART", payload: items });
-      } catch (err) {
-        console.error("Failed to load cart", err);
-        dispatch({ type: "LOAD_CART", payload: [] });
+      // 🔥 Merge guest cart into backend cart
+      let merged = [...backendItems];
+
+      parsedGuestCart.forEach((guestItem) => {
+        const existing = merged.find(
+          (i) => i.productId === guestItem.productId
+        );
+
+        if (existing) {
+          existing.quantity += guestItem.quantity;
+        } else {
+          merged.push(guestItem);
+        }
+      });
+
+      // If guest cart had items → update backend
+      if (parsedGuestCart.length > 0) {
+        await persistCart(merged);
+        localStorage.removeItem(GUEST_CART_KEY);
       }
-    };
 
-    loadCart();
-  }, [user?._id]);
+      dispatch({ type: "LOAD_CART", payload: merged });
+    } catch (err) {
+      console.error("Failed to load cart", err);
+      dispatch({ type: "LOAD_CART", payload: [] });
+    }
+  };
+
+  loadCart();
+}, [user?._id]);
 
   /* ================= PERSIST CART ================= */
 
   const persistCart = async (items: CartItem[]) => {
-    try {
-      await axios.post("/api/cart", {
-        items: items.map(i => ({
-          productId: i.productId,
-          name: i.name,
-          price: i.price,
-          image: i.image,
-          quantity: i.quantity,
-          customizations: {},
-        })),
-      });
-    } catch (err) {
-      console.error("Cart persistence failed", err);
-    }
-  };
+  // Guest → save to localStorage
+  if (!user?._id) {
+    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
+    return;
+  }
+
+  // Logged-in → save to backend
+  try {
+    await axios.post("/api/cart", {
+      items: items.map(i => ({
+        productId: i.productId,
+        name: i.name,
+        price: i.price,
+        image: i.image,
+        quantity: i.quantity,
+        customizations: {},
+      })),
+    });
+  } catch (err) {
+    console.error("Cart persistence failed", err);
+  }
+};
 
   /* ================= PROVIDER API ================= */
 
