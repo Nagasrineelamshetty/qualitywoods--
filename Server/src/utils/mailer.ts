@@ -8,8 +8,12 @@ export const sendOrderConfirmationEmail = async (
 ) => {
   const msg = {
     to,
-    from: "infoqualitywoods@gmail.com", 
-    subject: "Your Order Has Been Received!",
+    
+    subject: "Quality Woods Order Confirmation",
+    text: `Thank you for your order!
+  Your Order ID: ${orderId}
+  We will notify you as it moves through production.
+  – Quality Woods Team`,
     html: `
       <h2>Thank you for your order!</h2>
       <p>Your order ID is <strong>${orderId}</strong>.</p>
