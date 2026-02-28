@@ -1,30 +1,15 @@
-import nodemailer from 'nodemailer';
+import sgMail from "@sendgrid/mail";
 import dotenv from 'dotenv';
 dotenv.config();
-console.log("✅ EMAIL_USER:", process.env.EMAIL_USER);
-console.log("✅ EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS length:", process.env.EMAIL_PASS?.length);
-
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // use TLS
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false, // ensures certificate is verified
-  },
-});
-
-export const sendOrderConfirmationEmail = async (to: string, orderId: string) => {
-  const mailOptions = {
-    from: `"Quality Woods" <${process.env.EMAIL_USER}>`,
+sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
+export const sendOrderConfirmationEmail = async (
+  to: string,
+  orderId: string
+) => {
+  const msg = {
     to,
-    subject: 'Your Order Has Been Received!',
+    from: "infoqualitywoods@gmail.com", 
+    subject: "Your Order Has Been Received!",
     html: `
       <h2>Thank you for your order!</h2>
       <p>Your order ID is <strong>${orderId}</strong>.</p>
@@ -35,9 +20,10 @@ export const sendOrderConfirmationEmail = async (to: string, orderId: string) =>
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Confirmation email sent');
-  } catch (error) {
-    console.error('❌ Error sending confirmation email:', error);
+    await sgMail.send(msg);
+    console.log("✅ Confirmation email sent via SendGrid");
+  } catch (error: any) {
+    console.error("❌ SendGrid Error Body:", error.response?.body);
+    console.error("❌ Full Error:", error);
   }
 };

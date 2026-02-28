@@ -1,14 +1,10 @@
 import express, { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
-import mongoose from 'mongoose';
 import Order from '../models/Order';
-import Product from '../models/Product'; 
+import Product from '../models/Product';
 import dotenv from 'dotenv';
-import { verifyToken } from '../middleware/authmiddleware';
-import { verifyAdmin } from '../middleware/adminmiddleware';
-
+import { sendOrderConfirmationEmail } from '../utils/mailer';
 dotenv.config();
 const router = express.Router();
 
@@ -18,17 +14,6 @@ const router = express.Router();
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID as string,
   key_secret: process.env.RAZORPAY_SECRET as string,
-});
-
-/* -----------------------
-   Email transporter
------------------------ */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
 });
 
 /* -----------------------
@@ -66,7 +51,7 @@ const normalizeItems = async (items: any[]) => {
     formattedItems.push({
       productId: product._id,
       name: product.name,
-      price: product.price, // 🔥 price from DB
+      price: product.price,
       quantity: item.quantity,
       image: product.image,
       customizations: item.customizations || {},
@@ -76,26 +61,8 @@ const normalizeItems = async (items: any[]) => {
   return formattedItems;
 };
 
-/* -----------------------
-   Send confirmation email
------------------------ */
-const sendOrderEmail = async (
-  email: string,
-  orderId: string,
-  total: number
-) => {
-  if (!email) return;
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: `Order Confirmation - ${orderId}`,
-    text: `Your order ${orderId} has been placed successfully. Total Amount: ₹${total}`,
-  });
-};
-
 /* =========================================================
-   CREATE RAZORPAY ORDER (SECURE)
+   CREATE RAZORPAY ORDER
 ========================================================= */
 router.post('/create-order', async (req: Request, res: Response) => {
   try {
@@ -129,7 +96,7 @@ router.post('/create-order', async (req: Request, res: Response) => {
 });
 
 /* =========================================================
-   SAVE ORDER (COD) - SECURE
+   SAVE ORDER (COD)
 ========================================================= */
 router.post('/', async (req: Request, res: Response) => {
   try {
@@ -154,9 +121,15 @@ router.post('/', async (req: Request, res: Response) => {
     });
 
     await order.save();
-    await sendOrderEmail(email, order.razorpayOrderId!, total);
 
-    res.status(201).json({ message: 'Order saved successfully', order });
+    // 🔥 NON-BLOCKING EMAIL
+    sendOrderConfirmationEmail(email, order.razorpayOrderId!)
+      .catch(err => console.error("Email failed:", err));
+
+    res.status(201).json({
+      message: 'Order saved successfully',
+      order,
+    });
 
   } catch (error: any) {
     console.error('Error saving order:', error);
@@ -168,7 +141,7 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 /* =========================================================
-   VERIFY RAZORPAY PAYMENT - SECURE
+   VERIFY RAZORPAY PAYMENT
 ========================================================= */
 router.post('/verify-payment', async (req: Request, res: Response) => {
   try {
@@ -204,7 +177,6 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
       });
     }
 
-    // 🔥 Recalculate again (never trust frontend total)
     const total = await calculateTotalFromDB(items);
     const formattedItems = await normalizeItems(items);
 
@@ -220,7 +192,10 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
     });
 
     await order.save();
-    await sendOrderEmail(email, razorpay_order_id, total);
+
+    // 🔥 NON-BLOCKING EMAIL
+    sendOrderConfirmationEmail(email, razorpay_order_id)
+      .catch(err => console.error("Email failed:", err));
 
     res.status(201).json({
       message: 'Payment verified & order saved',
@@ -235,6 +210,7 @@ router.post('/verify-payment', async (req: Request, res: Response) => {
     });
   }
 });
+
 /* =========================================================
    GET ORDERS FOR USER
 ========================================================= */
@@ -252,4 +228,5 @@ router.get('/user/:userId', async (req: Request, res: Response) => {
     });
   }
 });
+
 export default router;

@@ -254,6 +254,7 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=mailid
 EMAIL_PASS=password
+SEND_GRID_API_KEY=sendgrid_api_key
 
 ```
 
@@ -299,17 +300,6 @@ npm run dev
 - Production deployment (Vercel + Render)
 - MongoDB data modeling
 - Order lifecycle management
-
----
-
-# 🎯 Future Improvements
-
-- Razorpay Webhook integration
-- Advanced sales analytics
-- Inventory management system
-- Email notifications for status updates
-- Coupon & discount system
-- Image optimization & CDN support
 
 ---
 
