@@ -75,10 +75,15 @@ const ProductDetails = () => {
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex flex-col md:flex-row gap-8">
         <img
-          src={`${import.meta.env.VITE_API_URL}${product.image}`}
-          alt={product.name}
-          className="w-full md:w-1/2 rounded-lg object-cover"
-        />
+            src={product.image.replace(
+              "/upload/",
+              "/upload/w_800,q_auto,f_auto/"
+            )}
+            loading="lazy"
+            decoding="async"
+            alt={product.name}
+            className="w-full max-w-lg h-auto object-contain mx-auto"
+      />
 
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-4 text-amber-900">

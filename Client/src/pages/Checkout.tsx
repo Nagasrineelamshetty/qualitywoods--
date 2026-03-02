@@ -345,7 +345,7 @@ const Checkout = () => {
                 {(isBuyNow && currentBuyNowItem ? [currentBuyNowItem] : state.items).map((item) => (
                   <div key={item.id} className="flex gap-3">
                     <img
-                      src={`${API_BASE}${item.image}`}
+                      src={item.image}
                       alt={item.name}
                       className="w-16 h-16 object-cover rounded"
                     />

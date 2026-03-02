@@ -6,7 +6,10 @@ const router = express.Router();
 // ✅ PUBLIC: Get ALL products (user product listing)
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .lean();  // 🔥 Added lean()
+
     res.json(products);
   } catch {
     res.status(500).json({ message: "Failed to fetch products" });
@@ -16,7 +19,7 @@ router.get("/", async (req, res) => {
 // ✅ PUBLIC: Get SINGLE product by ID (Product details page)
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean(); // 🔥 Added lean()
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
