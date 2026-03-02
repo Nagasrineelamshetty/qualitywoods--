@@ -8,7 +8,10 @@ export const sendOrderConfirmationEmail = async (
 ) => {
   const msg = {
     to,
-    
+    from: {
+      email: "infoqualitywoods@gmail.com",
+      name: "Quality Woods"
+    },
     subject: "Quality Woods Order Confirmation",
     text: `Thank you for your order!
   Your Order ID: ${orderId}

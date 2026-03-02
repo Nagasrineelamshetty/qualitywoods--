@@ -1,11 +1,13 @@
-import multer from 'multer';
-import path from 'path';
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary";
 
-const storage = multer.diskStorage({
-  destination: 'uploads/products',
-  filename: (_req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder: "quality-woods/products",
+    allowed_formats: ["jpg", "png", "jpeg", "webp", "avif"],
+  }),
 });
 
 export const upload = multer({ storage });

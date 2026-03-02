@@ -37,10 +37,8 @@ router.post(
         price: req.body.price,
         category: req.body.category,
         isInStock: req.body.isInStock,
-        image: req.file
-          ? `/uploads/products/${req.file.filename}`
-          : "",
-        customizationOptions, // ✅ FIX
+        image: req.file ? req.file.path : "",
+        customizationOptions,
       });
 
       res.status(201).json(product);
@@ -80,7 +78,7 @@ router.put(
 
       // ✅ Only update image if new one is uploaded
       if (req.file) {
-        updateData.image = `/uploads/products/${req.file.filename}`;
+        updateData.image = req.file.path;
       }
 
       const product = await Product.findByIdAndUpdate(

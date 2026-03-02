@@ -88,7 +88,12 @@ const AdminProducts = () => {
                 <div className="grid grid-rows-[16rem_auto_auto_auto_auto_auto] h-full">
                   {/* Image */}
                   <img
-                    src={`${API_BASE}${product.image}`}
+                    src={product.image.replace(
+                      "/upload/",
+                      "/upload/w_500,q_auto,f_auto/"
+                    )}
+                    loading="lazy"
+                    decoding="async"
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

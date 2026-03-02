@@ -135,9 +135,14 @@ const Products = () => {
             >
               {/* Image */}
               <img
-                src={`${API_BASE}${product.image}`}
-                alt={product.name}
-                className="w-full h-60 md:h-64 object-cover"
+                    src={product.image.replace(
+                      "/upload/",
+                      "/upload/w_500,q_auto,f_auto/"
+                    )}
+                    loading="lazy"
+                    decoding="async"
+                    alt={product.name}
+                    className="w-full h-full object-cover"
               />
 
               {/* Content */}
