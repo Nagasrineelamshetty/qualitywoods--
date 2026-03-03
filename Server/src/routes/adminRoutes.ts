@@ -1,3 +1,4 @@
+
 import express from "express";
 import { verifyToken } from "../middleware/authmiddleware";
 import { verifyAdmin } from "../middleware/adminmiddleware";
@@ -5,6 +6,7 @@ import Order from "../models/Order";
 import Product from "../models/Product";
 import { upload } from "../utils/upload";
 import Consultation from "../models/Consultation";
+import { invalidateProductCache } from "./productRoutes"; 
 
 const router = express.Router();
 
@@ -16,7 +18,7 @@ router.get("/test", verifyToken, verifyAdmin, (req, res) => {
 });
 
 /* =======================
-   ➕ Add Product (WITH IMAGE + CUSTOM OPTIONS)
+   ➕ Add Product
 ======================= */
 router.post(
   "/products",
@@ -41,6 +43,8 @@ router.post(
         customizationOptions,
       });
 
+      invalidateProductCache(); // 🔥 CLEAR CACHE
+
       res.status(201).json(product);
     } catch (err: any) {
       res.status(400).json({
@@ -52,7 +56,7 @@ router.post(
 );
 
 /* =======================
-   ✏️ Update Product (WITH CUSTOM OPTIONS)
+   ✏️ Update Product
 ======================= */
 router.put(
   "/products/:id",
@@ -73,10 +77,9 @@ router.put(
         price: req.body.price,
         category: req.body.category,
         isInStock: req.body.isInStock,
-        customizationOptions, // ✅ FIX
+        customizationOptions,
       };
 
-      // ✅ Only update image if new one is uploaded
       if (req.file) {
         updateData.image = req.file.path;
       }
@@ -90,6 +93,8 @@ router.put(
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
+
+      invalidateProductCache(); // 🔥 CLEAR CACHE
 
       res.json(product);
     } catch (err: any) {
@@ -116,6 +121,8 @@ router.delete(
         return res.status(404).json({ message: "Product not found" });
       }
 
+      invalidateProductCache(); // 🔥 CLEAR CACHE
+
       res.json({ message: "Product deleted" });
     } catch (err: any) {
       res.status(400).json({
@@ -135,7 +142,10 @@ router.get(
   verifyAdmin,
   async (req, res) => {
     try {
-      const products = await Product.find().sort({ createdAt: -1 });
+      const products = await Product.find()
+        .sort({ createdAt: -1 })
+        .lean(); // 🔥 small optimization
+
       res.json(products);
     } catch (err: any) {
       res.status(500).json({
@@ -182,18 +192,19 @@ router.get(
     }
   }
 );
-// =======================
-// 📞 Get All Consultations (Admin)
-// =======================
+
+/* =======================
+   📞 Get All Consultations
+======================= */
 router.get(
   "/consultations",
   verifyToken,
   verifyAdmin,
   async (req, res) => {
     try {
-      const consultations = await Consultation.find().sort({
-        createdAt: -1,
-      });
+      const consultations = await Consultation.find()
+        .sort({ createdAt: -1 })
+        .lean(); // 🔥 small optimization
 
       res.json(consultations);
     } catch (error: any) {
@@ -204,9 +215,10 @@ router.get(
     }
   }
 );
-// =======================
-// 📞 Mark Consultation as Contacted
-// =======================
+
+/* =======================
+   📞 Mark Consultation as Contacted
+======================= */
 router.patch(
   "/consultations/:id/status",
   verifyToken,
@@ -242,6 +254,5 @@ router.patch(
     }
   }
 );
-
 
 export default router;

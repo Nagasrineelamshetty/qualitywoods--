@@ -3,27 +3,38 @@ import Product from "../models/Product";
 
 const router = express.Router();
 
-// 🔥 In-memory cache variables
+/* =========================
+   🔥 CACHE STRUCTURE
+========================= */
+
 let cachedProducts: any = null;
-let cacheTime: number = 0;
+let productsCacheTime: number = 0;
+
+const productByIdCache: Record<string, any> = {};
+const productByIdCacheTime: Record<string, number> = {};
+
 const CACHE_DURATION = 60 * 1000; // 1 minute
 
-// ✅ PUBLIC: Get ALL products (user product listing)
+/* =========================
+   📦 GET ALL PRODUCTS
+========================= */
+
 router.get("/", async (req, res) => {
   try {
-    // ✅ If cache exists and not expired → return cached data
-    if (cachedProducts && Date.now() - cacheTime < CACHE_DURATION) {
+    if (
+      cachedProducts &&
+      Date.now() - productsCacheTime < CACHE_DURATION
+    ) {
       return res.json(cachedProducts);
     }
 
     const products = await Product.find()
-      .select("name price image category isInStock") 
+      .select("name price image category isInStock")
       .sort({ createdAt: -1 })
       .lean();
 
-    // 🔥 Store in cache
     cachedProducts = products;
-    cacheTime = Date.now();
+    productsCacheTime = Date.now();
 
     res.json(products);
   } catch {
@@ -31,19 +42,51 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ✅ PUBLIC: Get SINGLE product by ID
+/* =========================
+   📦 GET PRODUCT BY ID
+========================= */
+
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).lean();
+    const id = req.params.id;
+
+    if (
+      productByIdCache[id] &&
+      Date.now() - productByIdCacheTime[id] < CACHE_DURATION
+    ) {
+      return res.json(productByIdCache[id]);
+    }
+
+    const product = await Product.findById(id).lean();
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    productByIdCache[id] = product;
+    productByIdCacheTime[id] = Date.now();
 
     res.json(product);
   } catch {
     res.status(400).json({ message: "Invalid product id" });
   }
 });
+
+/* =========================
+   🔥 CACHE INVALIDATION FUNCTION
+========================= */
+
+export const invalidateProductCache = () => {
+  cachedProducts = null;
+  productsCacheTime = 0;
+
+  Object.keys(productByIdCache).forEach((key) => {
+    delete productByIdCache[key];
+  });
+
+  Object.keys(productByIdCacheTime).forEach((key) => {
+    delete productByIdCacheTime[key];
+  });
+};
 
 export default router;
